@@ -1,10 +1,23 @@
 <script setup lang="ts">
-import { articles } from '@/data/home'
+import { ref } from 'vue'
+import { onLoad } from '@dcloudio/uni-app'
+import { fetchLatestPosts } from '@/api/home'
 import { siteConfig } from '@/site.config'
 import type { ArticleCard } from '@/types/post'
 import TheTabBar from '@/components/TheTabBar.vue'
 
-// 死数据阶段：仅 UI 预览，点击给出反馈，后续接真实路由
+const articles = ref<ArticleCard[]>([])
+
+onLoad(async () => {
+  try {
+    articles.value = await fetchLatestPosts()
+  }
+  catch (error) {
+    console.error(error)
+    uni.showToast({ title: '文章加载失败', icon: 'none' })
+  }
+})
+
 const goArticle = (a: ArticleCard) => {
   uni.showToast({ title: `预览：${a.title}`, icon: 'none' })
 }

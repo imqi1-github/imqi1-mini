@@ -1,4 +1,4 @@
-// 首页展示用的内容类型（与后端字段命名保持一致，便于后续替换为真实接口）
+// 首页展示用的内容类型（与后端字段命名保持一致）
 
 /** 首页文章卡片：仅展示封面、标题、发布时间 */
 export interface ArticleCard {
@@ -6,8 +6,10 @@ export interface ArticleCard {
   id: number
   /** 文章标题 */
   title: string
-  /** 封面图地址（本地文件服务器，后续替换为真实接口） */
+  /** 封面图地址 */
   cover: string
   /** 已格式化好的发布时间文本，如 "3 天前" */
   publishedAt: string
+  /** 原始发布时间 ISO 字符串，便于后续扩展 */
+  created: string
 }
