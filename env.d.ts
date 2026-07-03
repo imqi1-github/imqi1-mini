@@ -13,4 +13,6 @@ declare module '*.vue' {
 interface ImportMetaEnv {
   /** 后端 API 基址（dev 读 .env.development，prod 读 .env.production） */
   readonly VITE_API_BASE_URL: string
+  /** 小程序 API 签名密钥，须与后端 MINI_API_SECRET 一致；留空则不加签名头 */
+  readonly VITE_MINI_API_SECRET: string
 }

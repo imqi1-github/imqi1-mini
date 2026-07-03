@@ -10,3 +10,7 @@ export const siteOrigin = (() => {
   return match ? match[1] : ''
 })()
 
+// 小程序 API 签名密钥，须与后端 MINI_API_SECRET 一致。
+// 留空则请求不带签名头（后端未配置密钥时也不校验，二者需同步开关）。
+export const miniApiSecret = import.meta.env.VITE_MINI_API_SECRET ?? ''
+
