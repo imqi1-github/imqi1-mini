@@ -11,3 +11,11 @@ export interface AboutInfo {
   /** 点击行为：copy 复制值到剪贴板；不填则仅展示 */
   action?: 'copy'
 }
+
+/** 关于页：技术栈条目（名称 + 品牌 logo） */
+export interface TechStackItem {
+  /** 技术栈名称，如「Vue 3」 */
+  name: string
+  /** 品牌 logo 路径（/static/tech/*.svg），用 image 引用以跨端（含 mp-weixin） */
+  logo: string
+}

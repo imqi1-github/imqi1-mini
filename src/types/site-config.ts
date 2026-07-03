@@ -7,8 +7,31 @@
 export interface SiteConfig {
   /** 站点名称，用于首页品牌名、分享标题等站点级展示文案 */
   siteName: string
+  /**
+   * 网页版站点地址（协议 + 域名，无尾斜杠）。
+   *
+   * 与根目录 `site.config.ts` 的 `siteUrl` 保持一致。
+   * 用于首页「浏览文章」跳转网页版，以及正文 markdown 中以 / 开头的
+   * 根相对链接补全为完整地址。
+   */
+  siteUrl: string
   /** 首页展示配置 */
   home: HomeConfig
+  /** 分类页展示配置 */
+  category: CategoryConfig
+}
+
+/** 分类页展示配置 */
+export interface CategoryConfig {
+  /** 分类详情页每页展示的文章数量 */
+  pageSize: number
+  /**
+   * 图片分类的 slug 列表。
+   *
+   * 命中此列表的分类会以双列封面瀑布流展示，否则走普通标题列表。
+   * 与后端解耦：图片分类的判定完全由小程序自行配置。
+   */
+  photoCategorySlugs: string[]
 }
 
 /** 首页展示配置 */

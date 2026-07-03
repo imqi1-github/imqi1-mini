@@ -6,6 +6,8 @@ export interface ArchiveArticle {
   day: string
   /** 文章标题 */
   title: string
+  /** 文章发布时间 */
+  created: string
 }
 
 /** 归档月份分组 */

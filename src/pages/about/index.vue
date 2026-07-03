@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { blogInfo, contactInfo, copyright, techStack } from '@/data/about'
 import type { AboutInfo } from '@/types/about'
-import TheTabBar from '@/components/TheTabBar.vue'
 
 // 点击可复制条目：复制值到剪贴板
 function onItem(item: AboutInfo) {
@@ -109,10 +108,15 @@ function onItem(item: AboutInfo) {
         <view class="tech__chips">
           <view
             v-for="t in techStack"
-            :key="t"
+            :key="t.name"
             class="tech__chip"
           >
-            {{ t }}
+            <image
+              class="tech__logo"
+              :src="t.logo"
+              mode="aspectFit"
+            />
+            {{ t.name }}
           </view>
         </view>
       </view>
@@ -124,8 +128,6 @@ function onItem(item: AboutInfo) {
         {{ copyright }}
       </text>
     </view>
-
-    <TheTabBar active="about" />
   </view>
 </template>
 
@@ -233,11 +235,20 @@ function onItem(item: AboutInfo) {
 }
 
 .tech__chip {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
   padding: 10rpx 22rpx;
   border-radius: 10rpx;
   background: var(--line);
   font-size: 24rpx;
   color: var(--ink);
+}
+
+.tech__logo {
+  width: 30rpx;
+  height: 30rpx;
+  flex-shrink: 0;
 }
 
 /* ===== 版权 ===== */

@@ -1,4 +1,4 @@
-import type { AboutInfo } from '@/types/about'
+import type { AboutInfo, TechStackItem } from '@/types/about'
 
 // 关于页写死数据 —— 仅用于 UI 预览，后续替换为真实接口
 export const blogInfo: AboutInfo[] = [
@@ -12,15 +12,15 @@ export const contactInfo: AboutInfo[] = [
   { label: '邮箱', value: 'imqi1@qq.com', icon: 'mail', action: 'copy' },
 ]
 
-// 小程序技术栈（取自 package.json）
-export const techStack: string[] = [
-  'uni-app',
-  'Vue 3',
-  'wot-design-uni',
-  'UnoCSS',
-  'TypeScript',
-  'Vite',
-  'Sass',
+// 小程序技术栈（取自 package.json），每项配品牌 logo
+export const techStack: TechStackItem[] = [
+  { name: 'uni-app', logo: '/static/tech/uni-app.svg' },
+  { name: 'Vue 3', logo: '/static/tech/vue.svg' },
+  { name: 'wot-design-uni', logo: '/static/tech/wot-design-uni.svg' },
+  { name: 'UnoCSS', logo: '/static/tech/unocss.svg' },
+  { name: 'TypeScript', logo: '/static/tech/typescript.svg' },
+  { name: 'Vite', logo: '/static/tech/vite.svg' },
+  { name: 'Sass', logo: '/static/tech/sass.svg' },
 ]
 
 export const copyright = '2026 \u00A9 棋'

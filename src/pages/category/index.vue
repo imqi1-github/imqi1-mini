@@ -1,11 +1,67 @@
 <script setup lang="ts">
-import { categories } from '@/data/category'
+import { computed, ref } from 'vue'
+import { onLoad } from '@dcloudio/uni-app'
+import { fetchCategories } from '@/api/category'
+import { fetchMessagesConfig } from '@/api/messages'
 import type { CategoryItem } from '@/types/category'
-import TheTabBar from '@/components/TheTabBar.vue'
 
-// 死数据阶段：仅 UI 预览，点击给出反馈，后续接真实分类路由
+const categories = ref<CategoryItem[]>([])
+const categoryCount = computed(() => categories.value.length)
+// 小程序评论总开关（features.miniComment）：关闭时隐藏「留言」入口（默认放行，拉取失败也不误伤）
+const commentEnabled = ref(true)
+
+onLoad(async () => {
+  try {
+    categories.value = await fetchCategories()
+  }
+  catch (error) {
+    console.error(error)
+    uni.showToast({ title: '分类加载失败', icon: 'none' })
+  }
+
+  // 单独拉评论开关，失败不影响分类展示
+  try {
+    const config = await fetchMessagesConfig()
+    commentEnabled.value = config.commentEnabled
+  }
+  catch (error) {
+    console.error(error)
+  }
+})
+
+// 无 slug 的分类无法进入详情页，仅提示
 function goCategory(item: CategoryItem) {
-  uni.showToast({ title: `预览：${item.title}`, icon: 'none' })
+  if (!item.slug) {
+    uni.showToast({ title: '该分类暂不可访问', icon: 'none' })
+    return
+  }
+
+  uni.navigateTo({
+    url: `/pages/category/detail?slug=${encodeURIComponent(item.slug)}&name=${encodeURIComponent(item.name)}`,
+  })
+}
+
+// 无封面时的兜底文字：取最新一篇文章标题首字，无文章则退回分类名首字
+function markOf(item: CategoryItem) {
+  const source = item.latestTitle.trim() || item.name.trim()
+  return source.charAt(0) || '#'
+}
+
+// 分类之外的独立页面入口（当前仅足迹/链接，后续可扩展）
+const extraPages = [
+  { key: 'travel', title: '足迹', icon: '📍', url: '/pages/travel/index' },
+  { key: 'link', title: '链接', icon: '🔗', url: '/pages/link/index' },
+  { key: 'messages', title: '留言', icon: '💬', url: '/pages/messages/index' },
+  { key: 'changelog', title: '更新日志', icon: '📝', url: '/pages/changelog/index' },
+]
+
+// 主站关闭评论时移除「留言」入口
+const visiblePages = computed(() =>
+  commentEnabled.value ? extraPages : extraPages.filter(p => p.key !== 'messages'),
+)
+
+function goPage(url: string) {
+  uni.navigateTo({ url })
 }
 </script>
 
@@ -17,7 +73,7 @@ function goCategory(item: CategoryItem) {
         分类
       </text>
       <text class="title-bar__sub">
-        共 4 个分类
+        共 {{ categoryCount }} 个分类
       </text>
     </view>
 
@@ -25,30 +81,66 @@ function goCategory(item: CategoryItem) {
     <view class="category-list">
       <view
         v-for="item in categories"
-        :key="item.id"
+        :key="item.mid"
         class="category-card"
         @tap="goCategory(item)"
       >
         <view class="category-card__mark">
-          {{ item.mark }}
+          <wd-img
+            v-if="item.cover"
+            :src="item.cover"
+            width="104rpx"
+            height="104rpx"
+            mode="aspectFill"
+            custom-class="category-card__cover"
+          />
+          <text
+            v-else
+            class="category-card__mark-text"
+          >
+            {{ markOf(item) }}
+          </text>
         </view>
         <view class="category-card__body">
           <view class="category-card__head">
             <text class="category-card__title">
-              {{ item.title }}
+              {{ item.name }}
             </text>
             <text class="category-card__count">
-              {{ item.count }} 篇
+              {{ item.postCount }} 篇
             </text>
           </view>
-          <text class="category-card__desc">
-            {{ item.description }}
+          <text
+            v-if="item.desc"
+            class="category-card__desc"
+          >
+            {{ item.desc }}
           </text>
         </view>
       </view>
     </view>
 
-    <TheTabBar active="category" />
+    <!-- 页面入口（分类之外的独立页面，如足迹）：小型卡片 -->
+    <view class="section-bar">
+      <text class="section-bar__text">
+        页面
+      </text>
+    </view>
+    <view class="page-grid">
+      <view
+        v-for="page in visiblePages"
+        :key="page.key"
+        class="page-chip"
+        @tap="goPage(page.url)"
+      >
+        <text class="page-chip__icon">
+          {{ page.icon }}
+        </text>
+        <text class="page-chip__title">
+          {{ page.title }}
+        </text>
+      </view>
+    </view>
   </view>
 </template>
 
@@ -84,6 +176,49 @@ function goCategory(item: CategoryItem) {
   padding: 40rpx 24rpx 0;
 }
 
+/* ===== 分节标题（页面入口） ===== */
+.section-bar {
+  padding: 32rpx 40rpx 0;
+}
+
+.section-bar__text {
+  font-size: 30rpx;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+/* ===== 页面入口小型卡片 ===== */
+.page-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20rpx;
+  padding: 24rpx 24rpx 40rpx;
+}
+
+.page-chip {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 20rpx 28rpx;
+  border-radius: 16rpx;
+  background: var(--card);
+  box-shadow: 0 6rpx 18rpx rgb(15 23 42 / 5%);
+
+  &:active {
+    background: var(--line);
+  }
+}
+
+.page-chip__icon {
+  font-size: 32rpx;
+}
+
+.page-chip__title {
+  font-size: 27rpx;
+  font-weight: 700;
+  color: var(--ink);
+}
+
 .category-card {
   display: flex;
   align-items: center;
@@ -100,20 +235,31 @@ function goCategory(item: CategoryItem) {
 }
 
 .category-card__mark {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 104rpx;
   height: 104rpx;
   margin-right: 24rpx;
+  overflow: hidden;
   border-radius: 24rpx;
   background: linear-gradient(135deg, #4f8cff 0%, #2563eb 100%);
   box-shadow: 0 10rpx 22rpx rgb(37 99 235 / 22%);
   flex-shrink: 0;
-  font-size: 22rpx;
+}
+
+.category-card__mark-text {
+  font-size: 40rpx;
   font-weight: 800;
   letter-spacing: 0.04em;
   color: #fff;
+}
+
+:deep(.category-card__cover) {
+  display: block;
+  width: 104rpx;
+  height: 104rpx;
 }
 
 .category-card__body {

@@ -25,16 +25,88 @@
       }
     },
     {
+      "path": "pages/category/detail",
+      "style": {
+        "navigationBarTitleText": "分类",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/travel/index",
+      "style": {
+        "navigationBarTitleText": "足迹"
+      }
+    },
+    {
+      "path": "pages/link/index",
+      "style": {
+        "navigationBarTitleText": "链接"
+      }
+    },
+    {
+      "path": "pages/messages/index",
+      "style": {
+        "navigationBarTitleText": "留言"
+      }
+    },
+    {
+      "path": "pages/changelog/index",
+      "style": {
+        "navigationBarTitleText": "更新日志"
+      }
+    },
+    {
       "path": "pages/about/index",
       "style": {
         "navigationBarTitleText": "关于"
       }
+    },
+    {
+      "path": "pages/post/detail",
+      "style": {
+        "navigationBarTitleText": "文章详情",
+        "enablePullDownRefresh": false
+      }
     }
   ],
+  "tabBar": {
+    "color": "@tabColor",
+    "selectedColor": "@tabSelectedColor",
+    "backgroundColor": "@tabBgColor",
+    "borderStyle": "@tabBorderStyle",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "static/tabbar/home_normal.png",
+        "selectedIconPath": "static/tabbar/home_active.png"
+      },
+      {
+        "pagePath": "pages/archive/index",
+        "text": "归档",
+        "iconPath": "static/tabbar/archive_normal.png",
+        "selectedIconPath": "static/tabbar/archive_active.png"
+      },
+      {
+        "pagePath": "pages/category/index",
+        "text": "分类",
+        "iconPath": "static/tabbar/category_normal.png",
+        "selectedIconPath": "static/tabbar/category_active.png"
+      },
+      {
+        "pagePath": "pages/about/index",
+        "text": "关于",
+        "iconPath": "static/tabbar/about_normal.png",
+        "selectedIconPath": "static/tabbar/about_active.png"
+      }
+    ]
+  },
   "globalStyle": {
-    "navigationBarTextStyle": "black",
+    "navigationBarTextStyle": "@navTxtStyle",
     "navigationBarTitleText": "imqi1",
-    "navigationBarBackgroundColor": "#FFFFFF",
-    "backgroundColor": "#F5F7FA"
-  }
+    "navigationBarBackgroundColor": "@navBgColor",
+    "backgroundColor": "@bgColor"
+  },
+  "darkmode": true,
+  "themeLocation": "theme.json"
 }

@@ -13,3 +13,39 @@ export interface ArticleCard {
   /** 原始发布时间 ISO 字符串，便于后续扩展 */
   created: string
 }
+
+/** 文章所属分类 */
+export interface PostCategory {
+  mid: number
+  name: string
+  /** 分类 slug，用于跳转分类详情页 */
+  slug: string
+}
+
+/** 文章封面项：图片地址 + 标题，标题无则为空字符串 */
+export interface PostCover {
+  url: string
+  title: string
+}
+
+/** 文章详情（来自 /mini/post/[id]），content 为 Markdown 原文 */
+export interface PostDetail {
+  /** 文章唯一 id */
+  id: number
+  /** 文章标题 */
+  title: string
+  /** 文章描述 / 摘要，无则为空字符串 */
+  description: string
+  /** Markdown 原文，交给端上解析器渲染 */
+  content: string
+  /** 首张封面绝对地址，无封面时为空字符串 */
+  cover: string
+  /** 全部封面（含标题），可能为空数组 */
+  covers: PostCover[]
+  /** 文章所属分类，可能为空数组 */
+  categories: PostCategory[]
+  /** 已格式化好的发布时间文本，如 "3 天前" */
+  publishedAt: string
+  /** 原始发布时间 ISO 字符串 */
+  created: string
+}

@@ -4,9 +4,12 @@ import { onLoad } from '@dcloudio/uni-app'
 import { fetchLatestPosts } from '@/api/home'
 import { siteConfig } from '@/site.config'
 import type { ArticleCard } from '@/types/post'
-import TheTabBar from '@/components/TheTabBar.vue'
 
 const articles = ref<ArticleCard[]>([])
+
+function getCoverFallback(title: string) {
+  return title.trim().charAt(0) || '?'
+}
 
 onLoad(async () => {
   try {
@@ -19,10 +22,22 @@ onLoad(async () => {
 })
 
 const goArticle = (a: ArticleCard) => {
-  uni.showToast({ title: `预览：${a.title}`, icon: 'none' })
+  uni.navigateTo({ url: `/pages/post/detail?id=${a.id}` })
 }
-const todo = (label: string) => {
-  uni.showToast({ title: `${label}（开发中）`, icon: 'none' })
+// 浏览文章：跳转网页版。小程序无法直接打开外部网址，复制链接到剪贴板由用户在浏览器打开。
+const goWebsite = () => {
+  uni.setClipboardData({
+    data: siteConfig.siteUrl,
+    success: () => uni.showToast({ title: '网页版链接已复制，请在浏览器打开', icon: 'none' }),
+  })
+}
+// 关于：跳转应用内关于页
+const goAbout = () => {
+  uni.switchTab({ url: '/pages/about/index' })
+}
+// 查看全部：跳转归档页
+const goArchive = () => {
+  uni.switchTab({ url: '/pages/archive/index' })
 }
 </script>
 
@@ -60,7 +75,7 @@ const todo = (label: string) => {
           type="primary"
           size="medium"
           custom-style="height:72rpx;padding:0 32rpx;background-color:#ffffff;color:#2563eb;border:none;border-radius:999rpx;font-size:26rpx"
-          @click="todo(siteConfig.home.primaryButton.label)"
+          @click="goWebsite"
         >
           {{ siteConfig.home.primaryButton.label }}
         </wd-button>
@@ -68,7 +83,7 @@ const todo = (label: string) => {
           type="primary"
           size="medium"
           custom-style="height:72rpx;padding:0 32rpx;background-color:rgba(255,255,255,0.14);color:#ffffff;border:1px solid rgba(255,255,255,0.55);border-radius:999rpx;font-size:26rpx"
-          @click="todo(siteConfig.home.secondaryButton.label)"
+          @click="goAbout"
         >
           {{ siteConfig.home.secondaryButton.label }}
         </wd-button>
@@ -85,7 +100,7 @@ const todo = (label: string) => {
         </view>
         <view
           class="section__more"
-          @tap="todo('查看全部')"
+          @tap="goArchive"
         >
           <text>查看全部</text>
           <wd-icon
@@ -104,11 +119,20 @@ const todo = (label: string) => {
         >
           <view class="card__cover">
             <wd-img
+              v-if="a.cover"
               :src="a.cover"
               width="100%"
               height="200rpx"
               mode="aspectFill"
             />
+            <view
+              v-else
+              class="card__cover-fallback"
+            >
+              <text class="card__cover-char">
+                {{ getCoverFallback(a.title) }}
+              </text>
+            </view>
           </view>
           <view class="card__body">
             <text class="card__title">
@@ -135,8 +159,6 @@ const todo = (label: string) => {
         <view class="end__line" />
       </view>
     </view>
-
-    <TheTabBar active="index" />
   </view>
 </template>
 
@@ -156,6 +178,18 @@ const todo = (label: string) => {
   background: linear-gradient(135deg, #4f8cff 0%, #2563eb 100%);
   box-shadow: 0 16rpx 40rpx rgb(37 99 235 / 28%);
   color: #fff;
+}
+
+/* 暗色模式：降低英雄区亮度，避免亮蓝在深色页面上过于刺眼 */
+@media (prefers-color-scheme: dark) {
+  .hero {
+    background: linear-gradient(135deg, #2c4a7a 0%, #1b3a63 100%);
+    box-shadow: 0 16rpx 40rpx rgb(0 0 0 / 40%);
+  }
+
+  .hero__glow {
+    background: radial-gradient(circle, rgb(255 255 255 / 10%) 0%, rgb(255 255 255 / 0%) 70%);
+  }
 }
 
 /* 装饰光晕 */
@@ -284,10 +318,26 @@ const todo = (label: string) => {
 }
 
 .card__cover {
+  position: relative;
   height: 200rpx;
   overflow: hidden;
   background: var(--line);
   line-height: 0;
+}
+
+.card__cover-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: linear-gradient(135deg, rgb(59 130 246 / 16%) 0%, rgb(37 99 235 / 28%) 100%);
+}
+
+.card__cover-char {
+  font-size: 72rpx;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--brand);
 }
 
 .card__body {

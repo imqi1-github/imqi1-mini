@@ -1,11 +1,24 @@
 <script setup lang="ts">
-import { archiveGroups } from '@/data/archive'
-import type { ArchiveArticle } from '@/types/archive'
-import TheTabBar from '@/components/TheTabBar.vue'
+import { computed, ref } from 'vue'
+import { onLoad } from '@dcloudio/uni-app'
+import { fetchArchiveGroups } from '@/api/archive'
+import type { ArchiveArticle, ArchiveMonthGroup } from '@/types/archive'
 
-// 死数据阶段：仅 UI 预览，点击给出反馈，后续接真实文章路由
+const archiveGroups = ref<ArchiveMonthGroup[]>([])
+const articleCount = computed(() => archiveGroups.value.reduce((total, group) => total + group.items.length, 0))
+
+onLoad(async () => {
+  try {
+    archiveGroups.value = await fetchArchiveGroups()
+  }
+  catch (error) {
+    console.error(error)
+    uni.showToast({ title: '归档加载失败', icon: 'none' })
+  }
+})
+
 function goArticle(item: ArchiveArticle) {
-  uni.showToast({ title: `预览：${item.title}`, icon: 'none' })
+  uni.navigateTo({ url: `/pages/post/detail?id=${item.id}` })
 }
 </script>
 
@@ -17,7 +30,7 @@ function goArticle(item: ArchiveArticle) {
         归档
       </text>
       <text class="title-bar__sub">
-        最近 12 篇文章
+        共 {{ articleCount }} 篇文章
       </text>
     </view>
 
@@ -62,8 +75,6 @@ function goArticle(item: ArchiveArticle) {
         </view>
       </view>
     </view>
-
-    <TheTabBar active="archive" />
   </view>
 </template>
 
@@ -71,6 +82,7 @@ function goArticle(item: ArchiveArticle) {
 .page {
   min-height: 100vh;
   background: var(--bg);
+  padding-bottom: 20rpx;
 }
 
 /* ===== 标题 ===== */
@@ -101,6 +113,9 @@ function goArticle(item: ArchiveArticle) {
 
 .month {
   position: relative;
+}
+
+.month:not(:last-child) {
   margin-bottom: 36rpx;
 }
 

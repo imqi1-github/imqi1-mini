@@ -2,3 +2,11 @@
 // Vite 按 mode 自动加载对应文件：dev → .env.development，prod → .env.production
 // 消费方统一从此处导入，勿直接读 import.meta.env
 export const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
+
+// 后端站点源（协议 + 域名 + 端口），由 apiBaseUrl 截取路径前部分得到。
+// 用于把正文里以 / 开头的根相对链接补全为完整地址（小程序无 <base>，需手动拼接）。
+export const siteOrigin = (() => {
+  const match = /^(https?:\/\/[^/]+)/i.exec(apiBaseUrl ?? '')
+  return match ? match[1] : ''
+})()
+
