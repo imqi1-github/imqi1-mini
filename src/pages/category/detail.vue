@@ -96,13 +96,14 @@ function coverFallback(text: string) {
   return text.trim().charAt(0) || '?'
 }
 
-// 加载前的占位比例：用封面真实宽高比，缺失时退回正方形。
-// 避免统一按 1/1 占位导致宽图加载后下方留白。
+// 加载前的占位高度：以百分比 padding-top 撑起（高/宽），小程序兼容性优于 aspect-ratio。
+// 缺失宽高时按 1:1 占位。
 function coverRatio(item: CategoryPost) {
   if (item.coverWidth && item.coverHeight) {
-    return `${item.coverWidth} / ${item.coverHeight}`
+    const ratio = (item.coverHeight / item.coverWidth) * 100
+    return `${ratio.toFixed(2)}%`
   }
-  return '1 / 1'
+  return '100%'
 }
 </script>
 
@@ -134,15 +135,17 @@ function coverRatio(item: CategoryPost) {
           class="photo-card"
           @tap="goArticle(item)"
         >
-          <wd-img
+          <view
             v-if="item.cover"
-            :src="item.cover"
-            width="100%"
-            height=""
-            mode="widthFix"
-            custom-class="photo-card__img"
-            :custom-style="`aspect-ratio:${coverRatio(item)};`"
-          />
+            class="photo-card__frame"
+            :style="`padding-top:${coverRatio(item)};`"
+          >
+            <image
+              :src="item.cover"
+              mode="aspectFill"
+              class="photo-card__img"
+            />
+          </view>
           <view
             v-else
             class="photo-card__fallback"
@@ -280,11 +283,21 @@ function coverRatio(item: CategoryPost) {
   }
 }
 
-:deep(.photo-card__img) {
+/* 图片占位框：用 padding-top 百分比撑出封面比例，加载中为纯色块，不塌陷 */
+.photo-card__frame {
+  position: relative;
+  width: 100%;
+  height: 0;
+  background: var(--line);
+}
+
+.photo-card__img {
+  position: absolute;
+  top: 0;
+  left: 0;
   display: block;
   width: 100%;
-  /* 加载前用封面真实宽高比占位（见 coverRatio），避免首帧塌陷或宽图留白 */
-  background: var(--line);
+  height: 100%;
 }
 
 .photo-card__fallback {

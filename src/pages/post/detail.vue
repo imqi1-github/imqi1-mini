@@ -27,6 +27,9 @@ const blocks = computed<MarkdownBlock[]>(() =>
   post.value ? parseMarkdown(post.value.content) : [],
 )
 
+// 正文是否有内容：为空时头部不显示分隔用的下边框
+const hasContent = computed(() => blocks.value.length > 0)
+
 async function load(id: number) {
   loading.value = true
   error.value = ''
@@ -140,7 +143,10 @@ function goCategory(cat: PostCategory) {
           @tap="previewCover(0)"
         />
 
-        <view class="photo-meta">
+        <view
+          class="photo-meta"
+          :class="{ 'photo-meta--no-border': !hasContent }"
+        >
           <text class="header__title">
             {{ post.title }}
           </text>
@@ -174,6 +180,7 @@ function goCategory(cat: PostCategory) {
       <view
         v-else
         class="header"
+        :class="{ 'header--no-border': !hasContent }"
       >
         <!-- 多图轮播 -->
         <swiper
@@ -236,7 +243,10 @@ function goCategory(cat: PostCategory) {
       </view>
 
       <!-- 正文 -->
-      <view class="content">
+      <view
+        v-if="hasContent"
+        class="content"
+      >
         <markdown-nodes :blocks="blocks" />
       </view>
 
@@ -264,6 +274,10 @@ function goCategory(cat: PostCategory) {
   padding: 40rpx 40rpx 24rpx;
   background: var(--card);
   border-bottom: 1rpx solid var(--line);
+}
+
+.header--no-border {
+  border-bottom: none;
 }
 
 .header__cover {
@@ -372,6 +386,10 @@ function goCategory(cat: PostCategory) {
   padding: 32rpx 40rpx 24rpx;
   background: var(--card);
   border-bottom: 1rpx solid var(--line);
+}
+
+.photo-meta--no-border {
+  border-bottom: none;
 }
 
 .photo-meta__desc {

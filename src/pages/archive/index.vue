@@ -153,7 +153,7 @@ function goArticle(item: ArchiveArticle) {
   position: absolute;
   top: 34rpx;
   bottom: -36rpx;
-  left: 31rpx;
+  left: 23rpx;
   width: 3rpx;
   background: rgb(59 130 246 / 24%);
 }
@@ -167,7 +167,7 @@ function goArticle(item: ArchiveArticle) {
   z-index: 1;
   display: flex;
   align-items: center;
-  padding: 0 16rpx 20rpx;
+  padding: 0 16rpx 20rpx 8rpx;
 }
 
 .month__dot {

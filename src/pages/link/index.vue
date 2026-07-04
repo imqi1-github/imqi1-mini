@@ -149,13 +149,13 @@ function markOf(item: LinkItem) {
   height: 88rpx;
   overflow: hidden;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4f8cff 0%, #2563eb 100%);
+  background: var(--card);
 }
 
 .link-card__avatar-text {
   font-size: 36rpx;
   font-weight: 800;
-  color: #fff;
+  color: var(--ink);
 }
 
 :deep(.link-card__img) {

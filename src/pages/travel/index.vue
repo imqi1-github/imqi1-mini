@@ -183,8 +183,8 @@ function markOf(item: TravelItem) {
   margin-right: 24rpx;
   overflow: hidden;
   border-radius: 24rpx;
-  background: linear-gradient(135deg, #34d399 0%, #059669 100%);
-  box-shadow: 0 10rpx 22rpx rgb(5 150 105 / 22%);
+  background: linear-gradient(135deg, #4f8cff 0%, #2563eb 100%);
+  box-shadow: 0 10rpx 22rpx rgb(37 99 235 / 22%);
   flex-shrink: 0;
 }
 
