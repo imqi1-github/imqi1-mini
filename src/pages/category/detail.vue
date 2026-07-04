@@ -95,6 +95,15 @@ function goArticle(item: CategoryPost) {
 function coverFallback(text: string) {
   return text.trim().charAt(0) || '?'
 }
+
+// 加载前的占位比例：用封面真实宽高比，缺失时退回正方形。
+// 避免统一按 1/1 占位导致宽图加载后下方留白。
+function coverRatio(item: CategoryPost) {
+  if (item.coverWidth && item.coverHeight) {
+    return `${item.coverWidth} / ${item.coverHeight}`
+  }
+  return '1 / 1'
+}
 </script>
 
 <template>
@@ -132,6 +141,7 @@ function coverFallback(text: string) {
             height=""
             mode="widthFix"
             custom-class="photo-card__img"
+            :custom-style="`aspect-ratio:${coverRatio(item)};`"
           />
           <view
             v-else
@@ -149,8 +159,7 @@ function coverFallback(text: string) {
           >
             <wd-icon
               name="picture"
-              size="16rpx"
-              color="#fff"
+              custom-class="photo-card__count-icon"
             />
             <text class="photo-card__count-text">
               {{ item.coverCount }}
@@ -274,6 +283,8 @@ function coverFallback(text: string) {
 :deep(.photo-card__img) {
   display: block;
   width: 100%;
+  /* 加载前用封面真实宽高比占位（见 coverRatio），避免首帧塌陷或宽图留白 */
+  background: var(--line);
 }
 
 .photo-card__fallback {
@@ -299,7 +310,7 @@ function coverFallback(text: string) {
   align-items: center;
   padding: 6rpx 14rpx;
   border-radius: 999rpx;
-  background: rgb(0 0 0 / 45%);
+  background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(4rpx);
 }
 
@@ -311,6 +322,11 @@ function coverFallback(text: string) {
   color: #fff;
 }
 
+:deep(.photo-card__count-icon) {
+  font-size: 22rpx;
+  color: #fff;
+}
+
 /* 标题浮层：贴在图片内部底部 */
 .photo-card__overlay {
   position: absolute;
@@ -318,7 +334,7 @@ function coverFallback(text: string) {
   bottom: 0;
   left: 0;
   padding: 40rpx 22rpx 20rpx;
-  background: linear-gradient(180deg, transparent 0%, rgb(0 0 0 / 60%) 100%);
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.6) 100%);
 }
 
 .photo-card__title {
@@ -395,5 +411,11 @@ function coverFallback(text: string) {
   font-size: 24rpx;
   color: var(--muted);
   text-align: center;
+}
+
+/* ===== 其他 ===== */
+.wd-icon-picture {
+  font-size: 22rpx;
+  color: #fff;
 }
 </style>

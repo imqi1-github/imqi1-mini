@@ -7,6 +7,7 @@ interface CommentsEnvelope {
   data: CommentNode[]
   requireMail: boolean
   requireLink: boolean
+  commentEnabled: boolean
 }
 
 /** 获取某篇文章的评论树及表单必填项设置（仅审核通过的评论，后端已构建为嵌套结构） */
@@ -16,6 +17,7 @@ export async function fetchPostComments(cid: number): Promise<CommentListResult>
     data: res.data,
     requireMail: res.requireMail,
     requireLink: res.requireLink,
+    commentEnabled: res.commentEnabled,
   }
 }
 

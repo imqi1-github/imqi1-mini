@@ -6,6 +6,7 @@ import { siteConfig } from '@/site.config'
 import type { ArticleCard } from '@/types/post'
 
 const articles = ref<ArticleCard[]>([])
+const loading = ref(true)
 
 function getCoverFallback(title: string) {
   return title.trim().charAt(0) || '?'
@@ -18,6 +19,9 @@ onLoad(async () => {
   catch (error) {
     console.error(error)
     uni.showToast({ title: '文章加载失败', icon: 'none' })
+  }
+  finally {
+    loading.value = false
   }
 })
 
@@ -110,54 +114,70 @@ const goArchive = () => {
         </view>
       </view>
 
-      <view class="grid">
-        <view
-          v-for="a in articles"
-          :key="a.id"
-          class="card"
-          @tap="goArticle(a)"
-        >
-          <view class="card__cover">
-            <wd-img
-              v-if="a.cover"
-              :src="a.cover"
-              width="100%"
-              height="200rpx"
-              mode="aspectFill"
-            />
-            <view
-              v-else
-              class="card__cover-fallback"
-            >
-              <text class="card__cover-char">
-                {{ getCoverFallback(a.title) }}
-              </text>
-            </view>
-          </view>
-          <view class="card__body">
-            <text class="card__title">
-              {{ a.title }}
-            </text>
-            <view class="card__meta">
-              <wd-icon
-                name="clock"
-                size="22rpx"
+      <!-- 加载中占位：避免文章返回前下方内容跳动 -->
+      <view
+        v-if="loading"
+        class="state"
+      >
+        加载中…
+      </view>
+      <view
+        v-else-if="!articles.length"
+        class="state"
+      >
+        还没有文章
+      </view>
+
+      <template v-else>
+        <view class="grid">
+          <view
+            v-for="a in articles"
+            :key="a.id"
+            class="card"
+            @tap="goArticle(a)"
+          >
+            <view class="card__cover">
+              <wd-img
+                v-if="a.cover"
+                :src="a.cover"
+                width="100%"
+                height="200rpx"
+                mode="aspectFill"
               />
-              <text class="card__time">
-                {{ a.publishedAt }}
+              <view
+                v-else
+                class="card__cover-fallback"
+              >
+                <text class="card__cover-char">
+                  {{ getCoverFallback(a.title) }}
+                </text>
+              </view>
+            </view>
+            <view class="card__body">
+              <text class="card__title">
+                {{ a.title }}
               </text>
+              <view class="card__meta">
+                <wd-icon
+                  name="clock"
+                  size="22rpx"
+                />
+                <text class="card__time">
+                  {{ a.publishedAt }}
+                </text>
+              </view>
             </view>
           </view>
         </view>
-      </view>
 
-      <view class="end">
-        <view class="end__line" />
-        <text class="end__text">
-          已经到底啦
-        </text>
-        <view class="end__line" />
-      </view>
+        <view class="end">
+          <view class="end__line" />
+          <text class="end__text">
+            已经到底啦
+          </text>
+          <view class="end__line" />
+        </view>
+      </template>
     </view>
   </view>
 </template>
@@ -270,6 +290,14 @@ const goArchive = () => {
 /* ===== 最近发布 ===== */
 .section {
   padding: 48rpx 24rpx 64rpx;
+}
+
+/* 加载 / 空态占位 */
+.state {
+  padding: 80rpx 0;
+  font-size: 26rpx;
+  color: var(--muted);
+  text-align: center;
 }
 
 .section__head {

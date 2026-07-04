@@ -44,6 +44,8 @@ export interface CommentListResult {
   requireMail: boolean
   /** 是否必填链接 */
   requireLink: boolean
+  /** 小程序评论总开关；false 时整个评论区（含输入框）不展示 */
+  commentEnabled: boolean
 }
 
 /** 提交评论的响应 */

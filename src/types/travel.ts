@@ -6,6 +6,8 @@ export interface TravelPost {
   id: number
   /** 文章标题 */
   title: string
+  /** 是否图片文章（属于图片分类），进入详情时据此带 photo=1 */
+  photo: boolean
 }
 
 /** 足迹点：一个去过的地方及其关联文章 */

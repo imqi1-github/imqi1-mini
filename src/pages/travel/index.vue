@@ -22,7 +22,11 @@ onLoad(async () => {
 })
 
 function goPost(post: TravelPost) {
-  uni.navigateTo({ url: `/pages/post/detail?id=${post.id}` })
+  // 图片文章带 photo=1，详情页据此切换为图片版式，与图片分类进入一致
+  const url = post.photo
+    ? `/pages/post/detail?id=${post.id}&photo=1`
+    : `/pages/post/detail?id=${post.id}`
+  uni.navigateTo({ url })
 }
 
 // 无封面时的兜底文字：取地点名首字
@@ -99,9 +103,10 @@ function markOf(item: TravelItem) {
             class="travel-post"
             @tap="goPost(post)"
           >
-            <text class="travel-post__icon">
-              📄
-            </text>
+            <wd-icon
+              :name="post.photo ? 'picture' : 'note'"
+              custom-class="travel-post__icon"
+            />
             <text class="travel-post__title">
               {{ post.title }}
             </text>
@@ -238,9 +243,10 @@ function markOf(item: TravelItem) {
   }
 }
 
-.travel-post__icon {
+:deep(.travel-post__icon) {
   margin-right: 12rpx;
-  font-size: 26rpx;
+  font-size: 30rpx;
+  color: var(--muted);
   flex-shrink: 0;
 }
 

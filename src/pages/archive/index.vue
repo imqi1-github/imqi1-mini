@@ -5,6 +5,7 @@ import { fetchArchiveGroups } from '@/api/archive'
 import type { ArchiveArticle, ArchiveMonthGroup } from '@/types/archive'
 
 const archiveGroups = ref<ArchiveMonthGroup[]>([])
+const loading = ref(true)
 const articleCount = computed(() => archiveGroups.value.reduce((total, group) => total + group.items.length, 0))
 
 onLoad(async () => {
@@ -14,6 +15,9 @@ onLoad(async () => {
   catch (error) {
     console.error(error)
     uni.showToast({ title: '归档加载失败', icon: 'none' })
+  }
+  finally {
+    loading.value = false
   }
 })
 
@@ -34,8 +38,25 @@ function goArticle(item: ArchiveArticle) {
       </text>
     </view>
 
+    <!-- 加载 / 空态占位：避免时间线返回前布局跳动 -->
+    <view
+      v-if="loading"
+      class="state"
+    >
+      加载中…
+    </view>
+    <view
+      v-else-if="!archiveGroups.length"
+      class="state"
+    >
+      还没有文章
+    </view>
+
     <!-- 时间线 -->
-    <view class="timeline">
+    <view
+      v-else
+      class="timeline"
+    >
       <view
         v-for="group in archiveGroups"
         :key="group.title"
@@ -104,6 +125,14 @@ function goArticle(item: ArchiveArticle) {
   padding-bottom: 10rpx;
   font-size: 24rpx;
   color: var(--muted);
+}
+
+/* 加载 / 空态占位 */
+.state {
+  padding: 120rpx 0;
+  font-size: 26rpx;
+  color: var(--muted);
+  text-align: center;
 }
 
 /* ===== 时间线 ===== */

@@ -18,6 +18,10 @@ const props = withDefaults(defineProps<{
 
 const comments = ref<CommentNode[]>([])
 const commentsLoading = ref(false)
+// 评论总开关（features.miniComment）：false 时整个评论区（含输入框）不渲染。
+// 初始 false，避免进页面先渲染输入框、请求返回关闭后再撤掉造成布局偏移/闪现；
+// 确认允许评论后才展示。拉取失败保持 false（宁可不显示，也不闪现）。
+const commentEnabled = ref(false)
 
 // ===== 评论表单状态 =====
 // 昵称/邮箱/链接本地留存：上次通过小程序成功评论后写入，进入时自动带出。
@@ -51,6 +55,7 @@ async function loadComments(id: number) {
     comments.value = result.data
     requireMail.value = result.requireMail
     requireLink.value = result.requireLink
+    commentEnabled.value = result.commentEnabled
   }
   catch (e) {
     console.error(e)
@@ -151,7 +156,10 @@ provide(commentFormKey, {
 </script>
 
 <template>
-  <view class="comments">
+  <view
+    v-if="commentEnabled"
+    class="comments"
+  >
     <view class="comments__title">
       <text class="comments__title-text">
         {{ title }}

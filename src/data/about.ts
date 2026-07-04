@@ -4,7 +4,7 @@ import type { AboutInfo, TechStackItem } from '@/types/about'
 export const blogInfo: AboutInfo[] = [
   { label: '站点名称', value: 'ImQi1', icon: 'app' },
   { label: '作者', value: '棋', icon: 'user' },
-  { label: '小程序版本', value: '1.1.4', icon: 'notification' },
+  { label: '小程序版本', value: '2.0.0', icon: 'notification' },
   { label: '网站地址', value: 'imqi1.com', icon: 'link', action: 'copy' },
 ]
 

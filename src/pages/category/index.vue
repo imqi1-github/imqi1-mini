@@ -6,9 +6,12 @@ import { fetchMessagesConfig } from '@/api/messages'
 import type { CategoryItem } from '@/types/category'
 
 const categories = ref<CategoryItem[]>([])
+const loading = ref(true)
 const categoryCount = computed(() => categories.value.length)
-// 小程序评论总开关（features.miniComment）：关闭时隐藏「留言」入口（默认放行，拉取失败也不误伤）
-const commentEnabled = ref(true)
+// 小程序评论总开关（features.miniComment）：关闭时隐藏「留言」入口。
+// 初始 false，避免进页面先显示留言入口、请求返回关闭后再移除造成闪烁；
+// 确认允许后才展示，拉取失败保持 false（宁可不显示，也不闪现）。
+const commentEnabled = ref(false)
 
 onLoad(async () => {
   try {
@@ -17,6 +20,9 @@ onLoad(async () => {
   catch (error) {
     console.error(error)
     uni.showToast({ title: '分类加载失败', icon: 'none' })
+  }
+  finally {
+    loading.value = false
   }
 
   // 单独拉评论开关，失败不影响分类展示
@@ -49,10 +55,10 @@ function markOf(item: CategoryItem) {
 
 // 分类之外的独立页面入口（当前仅足迹/链接，后续可扩展）
 const extraPages = [
-  { key: 'travel', title: '足迹', icon: '📍', url: '/pages/travel/index' },
-  { key: 'link', title: '链接', icon: '🔗', url: '/pages/link/index' },
-  { key: 'messages', title: '留言', icon: '💬', url: '/pages/messages/index' },
-  { key: 'changelog', title: '更新日志', icon: '📝', url: '/pages/changelog/index' },
+  { key: 'travel', title: '足迹', icon: 'location', url: '/pages/travel/index' },
+  { key: 'link', title: '链接', icon: 'link', url: '/pages/link/index' },
+  { key: 'messages', title: '留言', icon: 'chat', url: '/pages/messages/index' },
+  { key: 'changelog', title: '更新日志', icon: 'note', url: '/pages/changelog/index' },
 ]
 
 // 主站关闭评论时移除「留言」入口
@@ -77,70 +83,81 @@ function goPage(url: string) {
       </text>
     </view>
 
-    <!-- 分类列表 -->
-    <view class="category-list">
-      <view
-        v-for="item in categories"
-        :key="item.mid"
-        class="category-card"
-        @tap="goCategory(item)"
-      >
-        <view class="category-card__mark">
-          <wd-img
-            v-if="item.cover"
-            :src="item.cover"
-            width="104rpx"
-            height="104rpx"
-            mode="aspectFill"
-            custom-class="category-card__cover"
-          />
-          <text
-            v-else
-            class="category-card__mark-text"
-          >
-            {{ markOf(item) }}
-          </text>
-        </view>
-        <view class="category-card__body">
-          <view class="category-card__head">
-            <text class="category-card__title">
-              {{ item.name }}
-            </text>
-            <text class="category-card__count">
-              {{ item.postCount }} 篇
-            </text>
-          </view>
-          <text
-            v-if="item.desc"
-            class="category-card__desc"
-          >
-            {{ item.desc }}
-          </text>
-        </view>
-      </view>
+    <!-- 加载中占位：避免分类返回前下方内容跳动 -->
+    <view
+      v-if="loading"
+      class="state"
+    >
+      加载中…
     </view>
 
-    <!-- 页面入口（分类之外的独立页面，如足迹）：小型卡片 -->
-    <view class="section-bar">
-      <text class="section-bar__text">
-        页面
-      </text>
-    </view>
-    <view class="page-grid">
-      <view
-        v-for="page in visiblePages"
-        :key="page.key"
-        class="page-chip"
-        @tap="goPage(page.url)"
-      >
-        <text class="page-chip__icon">
-          {{ page.icon }}
-        </text>
-        <text class="page-chip__title">
-          {{ page.title }}
+    <template v-else>
+      <!-- 分类列表 -->
+      <view class="category-list">
+        <view
+          v-for="item in categories"
+          :key="item.mid"
+          class="category-card"
+          @tap="goCategory(item)"
+        >
+          <view class="category-card__mark">
+            <wd-img
+              v-if="item.cover"
+              :src="item.cover"
+              width="104rpx"
+              height="104rpx"
+              mode="aspectFill"
+              custom-class="category-card__cover"
+            />
+            <text
+              v-else
+              class="category-card__mark-text"
+            >
+              {{ markOf(item) }}
+            </text>
+          </view>
+          <view class="category-card__body">
+            <view class="category-card__head">
+              <text class="category-card__title">
+                {{ item.name }}
+              </text>
+              <text class="category-card__count">
+                {{ item.postCount }} 篇
+              </text>
+            </view>
+            <text
+              v-if="item.desc"
+              class="category-card__desc"
+            >
+              {{ item.desc }}
+            </text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 页面入口（分类之外的独立页面，如足迹）：小型卡片 -->
+      <view class="section-bar">
+        <text class="section-bar__text">
+          页面
         </text>
       </view>
-    </view>
+      <view class="page-grid">
+        <view
+          v-for="page in visiblePages"
+          :key="page.key"
+          class="page-chip"
+          @tap="goPage(page.url)"
+        >
+          <wd-icon
+            :name="page.icon"
+            custom-class="page-chip__icon"
+          />
+          <text class="page-chip__title">
+            {{ page.title }}
+          </text>
+        </view>
+      </view>
+    </template>
   </view>
 </template>
 
@@ -169,6 +186,14 @@ function goPage(url: string) {
   padding-bottom: 10rpx;
   font-size: 24rpx;
   color: var(--muted);
+}
+
+/* 加载中占位 */
+.state {
+  padding: 120rpx 0;
+  font-size: 26rpx;
+  color: var(--muted);
+  text-align: center;
 }
 
 /* ===== 分类列表 ===== */
@@ -209,8 +234,9 @@ function goPage(url: string) {
   }
 }
 
-.page-chip__icon {
-  font-size: 32rpx;
+:deep(.page-chip__icon) {
+  font-size: 36rpx;
+  color: var(--brand);
 }
 
 .page-chip__title {
