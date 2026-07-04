@@ -65,14 +65,18 @@ function collectReferences(lines: string[]): Map<string, string> {
 }
 
 /**
- * 归一化图片块：去掉实况照片标记（src 尾部 #live、alt 内 [live]），
- * 当普通图片显示。不做实况交互。
+ * 归一化图片块：识别实况照片标记（src 尾部 #live 或 alt 内 [live]）。
+ * 实况照片保留 src 的 #live 锚点并置 isLive，交给 live-photo 组件做点击播放；
+ * 普通图片剥掉 alt 内可能残留的 [live] 标记后原样返回。
  */
 function normalizeImage(alt: string, src: string): ImageBlock {
+  const isLive = /#live$/i.test(src) || /\[live\]/i.test(alt)
   return {
     type: 'image',
-    src: src.replace(/#live$/i, ''),
+    // 实况照片保留 #live（组件据此拉取内嵌视频）；普通图片无 #live，replace 不影响
+    src,
     alt: alt.replace(/\[live\]/gi, '').trim(),
+    ...(isLive ? { isLive: true } : {}),
   }
 }
 
@@ -457,14 +461,14 @@ function parseBlocks(lines: string[], refs: Map<string, string>): MarkdownBlock[
       continue
     }
 
-    // 实况照片：::: live-photo URL 标题（不做实况，抽出 URL 当普通图片；标题作 alt）
+    // 实况照片：::: live-photo URL 标题（保留实况标记，交给 live-photo 组件点击播放）
     const livePhotoOpen = LIVE_PHOTO_OPEN_RE.exec(trimmed)
     if (livePhotoOpen) {
       flushParagraph()
       i = collectContainerBody(lines, i + 1).next
       const [src = '', ...captionParts] = livePhotoOpen[1].trim().split(/\s+/)
       if (src) {
-        blocks.push({ type: 'image', src, alt: captionParts.join(' ').trim() })
+        blocks.push({ type: 'image', src, alt: captionParts.join(' ').trim(), isLive: true })
       }
       continue
     }

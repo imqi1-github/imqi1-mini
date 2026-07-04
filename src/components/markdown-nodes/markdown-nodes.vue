@@ -4,7 +4,9 @@ import { siteConfig } from '@/site.config'
 import WaterfallGrid from '@/components/waterfall-grid/waterfall-grid.vue'
 import MusicPlayer from '@/components/music-player/music-player.vue'
 import RepoCard from '@/components/repo-card/repo-card.vue'
+import LivePhoto from '@/components/live-photo/live-photo.vue'
 import type { CalloutType, MarkdownBlock } from '@/types/markdown'
+import { isLivePhoto } from '@/utils/live-photo'
 
 // 递归渲染 Markdown 块级节点。折叠面板（details）的内容再引用 <markdown-nodes>
 // 渲染 children，自引用靠下方 defineOptions 的 name 解析（Vue 内建递归组件机制，
@@ -188,7 +190,15 @@ function previewImages(urls: string[], current: string) {
       </scroll-view>
     </view>
 
-    <!-- 图片 -->
+    <!-- 图片：实况照片用 live-photo 组件（点击播放内嵌视频），普通图片用 image -->
+    <live-photo
+      v-else-if="block.type === 'image' && block.isLive"
+      class="md-image"
+      :src="block.src"
+      :alt="block.alt"
+      mode="widthFix"
+      radius="12rpx"
+    />
     <image
       v-else-if="block.type === 'image'"
       class="md-image"
@@ -363,7 +373,16 @@ function previewImages(urls: string[], current: string) {
           v-for="(slide, si) in block.slides"
           :key="si"
         >
+          <live-photo
+            v-if="isLivePhoto(slide.url)"
+            class="md-swiper__img"
+            :src="slide.url"
+            :alt="slide.title"
+            mode="aspectFill"
+            :fill="true"
+          />
           <image
+            v-else
             class="md-swiper__img"
             :src="slide.url"
             mode="aspectFill"
@@ -679,7 +698,9 @@ function previewImages(urls: string[], current: string) {
 .md-callout {
   display: flex;
   align-items: flex-start;
-  padding: 24rpx;
+  /* 上下留小内边距，靠框内块级节点自身的外边距补足竖向间距，
+     避免用 `.md-callout__body :first-child` 这类含通配的后代选择器（微信组件 wxss 禁用）。 */
+  padding: 4rpx 24rpx;
   margin: 24rpx 0;
   border: 1rpx solid;
   border-radius: 14rpx;
@@ -696,15 +717,6 @@ function previewImages(urls: string[], current: string) {
 .md-callout__body {
   flex: 1;
   min-width: 0;
-}
-
-/* 框内块级节点首尾外边距收紧，避免与内边距叠加 */
-.md-callout__body :first-child {
-  margin-top: 0;
-}
-
-.md-callout__body :last-child {
-  margin-bottom: 0;
 }
 
 /* 四种配色：成功(绿) / 警告(黄) / 错误(红) / 信息(蓝) */

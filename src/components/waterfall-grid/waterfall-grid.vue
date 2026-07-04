@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { WaterfallImage } from '@/types/markdown'
+import LivePhoto from '@/components/live-photo/live-photo.vue'
+import { isLivePhoto } from '@/utils/live-photo'
 
 // 两列错落瀑布流：小程序无法用 CSS columns（多端不可靠），改用手动分列。
 // 拿到每张图的宽高比后，贪心放入当前累计高度较矮的一列，视觉上左右均衡。
@@ -17,12 +19,20 @@ interface ImageLoadEvent {
   detail?: { width?: number, height?: number }
 }
 
-function onImageLoad(index: number, e: ImageLoadEvent) {
-  const w = e.detail?.width
-  const h = e.detail?.height
+function setRatio(index: number, w?: number, h?: number) {
   if (w && h) {
     ratios.value = { ...ratios.value, [index]: h / w }
   }
+}
+
+function onImageLoad(index: number, e: ImageLoadEvent) {
+  setRatio(index, e.detail?.width, e.detail?.height)
+}
+
+// live-photo 透传的尺寸事件（实况图用组件渲染，宽高比同样参与分列）。
+// 下标由组件 tag 原样带回（小程序端无法在模板内联箭头里引用循环变量）。
+function onLiveLoad(payload: { width: number, height: number, tag: number }) {
+  setRatio(payload.tag, payload.width, payload.height)
 }
 
 interface Column {
@@ -50,6 +60,12 @@ function preview(current: string) {
   if (!urls.length) return
   uni.previewImage({ urls, current })
 }
+
+// 单元格点击：普通图预览大图；实况图交给内部 live-photo 自行播放，外层不重复处理
+function onCellTap(image: WaterfallImage) {
+  if (isLivePhoto(image.url)) return
+  preview(image.url)
+}
 </script>
 
 <template>
@@ -63,9 +79,22 @@ function preview(current: string) {
         v-for="cell in col.items"
         :key="cell.index"
         class="waterfall__item"
-        @tap="preview(cell.image.url)"
+        @tap="onCellTap(cell.image)"
       >
+        <!-- 实况照片：live-photo 组件自带点击播放，圆角需传入（原生 video 不受父级裁剪）。
+             tag 透传下标，@load 直接绑函数（小程序端组件事件不能用引用循环变量的内联箭头）。 -->
+        <live-photo
+          v-if="isLivePhoto(cell.image.url)"
+          class="waterfall__img"
+          :src="cell.image.url"
+          :alt="cell.image.title"
+          mode="widthFix"
+          radius="12rpx"
+          :tag="cell.index"
+          @load="onLiveLoad"
+        />
         <image
+          v-else
           class="waterfall__img"
           :src="cell.image.url"
           mode="widthFix"

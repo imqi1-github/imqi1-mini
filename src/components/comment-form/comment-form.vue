@@ -61,6 +61,7 @@ const { form, submitting, requireMail, requireLink, replyTo, cancelReply, submit
 
     <button
       class="comment-form__submit"
+      :class="{ 'comment-form__submit--disabled': submitting }"
       :loading="submitting"
       :disabled="submitting"
       @tap="submit"
@@ -151,7 +152,7 @@ const { form, submitting, requireMail, requireLink, replyTo, cancelReply, submit
     border: none;
   }
 
-  &[disabled] {
+  &--disabled {
     opacity: 0.6;
   }
 }

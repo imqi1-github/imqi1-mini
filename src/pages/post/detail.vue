@@ -4,9 +4,11 @@ import { onLoad } from '@dcloudio/uni-app'
 import { fetchPostDetail } from '@/api/post'
 import CommentSection from '@/components/comment-section/comment-section.vue'
 import MarkdownNodes from '@/components/markdown-nodes/markdown-nodes.vue'
+import LivePhoto from '@/components/live-photo/live-photo.vue'
 import type { PostDetail, PostCategory, PostCover } from '@/types/post'
 import type { MarkdownBlock } from '@/types/markdown'
 import { parseMarkdown } from '@/utils/markdown'
+import { isLivePhoto } from '@/utils/live-photo'
 
 const post = ref<PostDetail | null>(null)
 const loading = ref(true)
@@ -16,7 +18,7 @@ const isPhoto = ref(false)
 // 满屏封面高度：用系统可用高度而非 100vh，避免把导航栏也算进去导致底部标题被截掉
 const heroHeight = ref('100vh')
 try {
-  const { windowHeight } = uni.getSystemInfoSync()
+  const { windowHeight } = uni.getWindowInfo()
   if (windowHeight) heroHeight.value = `${windowHeight}px`
 }
 catch {}
@@ -117,7 +119,16 @@ function goCategory(cat: PostCategory) {
             v-for="(item, ci) in galleryCovers"
             :key="ci"
           >
+            <live-photo
+              v-if="isLivePhoto(item.url)"
+              class="photo-hero__img"
+              :src="item.url"
+              :alt="item.title"
+              mode="aspectFill"
+              :fill="true"
+            />
             <image
+              v-else
               class="photo-hero__img"
               :src="item.url"
               mode="aspectFill"
@@ -134,6 +145,15 @@ function goCategory(cat: PostCategory) {
           </swiper-item>
         </swiper>
         <!-- 单图 -->
+        <live-photo
+          v-else-if="galleryCovers.length === 1 && isLivePhoto(galleryCovers[0].url)"
+          class="photo-hero"
+          :style="{ height: heroHeight }"
+          :src="galleryCovers[0].url"
+          :alt="galleryCovers[0].title"
+          mode="aspectFill"
+          :fill="true"
+        />
         <image
           v-else-if="galleryCovers.length === 1"
           class="photo-hero photo-hero__img"
@@ -195,7 +215,16 @@ function goCategory(cat: PostCategory) {
             v-for="(item, ci) in galleryCovers"
             :key="ci"
           >
+            <live-photo
+              v-if="isLivePhoto(item.url)"
+              class="header__cover-img"
+              :src="item.url"
+              :alt="item.title"
+              mode="aspectFill"
+              :fill="true"
+            />
             <image
+              v-else
               class="header__cover-img"
               :src="item.url"
               mode="aspectFill"
@@ -212,6 +241,13 @@ function goCategory(cat: PostCategory) {
           </swiper-item>
         </swiper>
         <!-- 单图 -->
+        <live-photo
+          v-else-if="post.cover && isLivePhoto(post.cover)"
+          class="header__cover"
+          :src="post.cover"
+          mode="aspectFill"
+          :fill="true"
+        />
         <image
           v-else-if="post.cover"
           class="header__cover"

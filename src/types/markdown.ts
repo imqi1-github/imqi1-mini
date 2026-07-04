@@ -72,6 +72,11 @@ export interface ImageBlock {
   type: 'image'
   src: string
   alt: string
+  /**
+   * 是否为实况照片（Motion Photo，尾部内嵌 MP4，src 带 #live 锚点）。
+   * 为真时端上用 live-photo 组件渲染，支持点击播放内嵌视频；否则当普通图片。
+   */
+  isLive?: boolean
 }
 
 /** 分割线 */
