@@ -708,6 +708,8 @@ function previewImages(urls: string[], current: string) {
 
 .md-callout__icon {
   flex-shrink: 0;
+  /* 与正文首个段落的 margin-top(20rpx) 对齐，避免图标高于首行文字 */
+  margin-top: 22rpx;
   margin-right: 16rpx;
   font-size: 30rpx;
   font-weight: 700;
