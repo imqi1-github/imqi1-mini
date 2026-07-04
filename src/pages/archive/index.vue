@@ -33,7 +33,10 @@ function goArticle(item: ArchiveArticle) {
       <text class="title-bar__text">
         归档
       </text>
-      <text class="title-bar__sub">
+      <text
+        v-if="!loading"
+        class="title-bar__sub"
+      >
         共 {{ articleCount }} 篇文章
       </text>
     </view>

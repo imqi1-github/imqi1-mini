@@ -78,7 +78,10 @@ function goPage(url: string) {
       <text class="title-bar__text">
         分类
       </text>
-      <text class="title-bar__sub">
+      <text
+        v-if="!loading"
+        class="title-bar__sub"
+      >
         共 {{ categoryCount }} 个分类
       </text>
     </view>

@@ -10,7 +10,7 @@ export const siteConfig = defineSiteConfig({
   siteName: 'ImQi1',
   siteUrl: 'https://imqi1.com',
   home: {
-    eyebrow: 'BLOG',
+    eyebrow: 'MINI PROGRAM',
     titleLines: ['记录代码，', '也记录生活。'],
     description: '技术笔记、城市漫步、随手拍，偶尔写点没用的东西。',
     primaryButton: {

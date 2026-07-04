@@ -42,7 +42,10 @@ function markOf(item: LinkItem) {
       <text class="title-bar__text">
         链接
       </text>
-      <text class="title-bar__sub">
+      <text
+        v-if="!loading"
+        class="title-bar__sub"
+      >
         共 {{ linkCount }} 个
       </text>
     </view>

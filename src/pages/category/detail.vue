@@ -114,7 +114,10 @@ function coverRatio(item: CategoryPost) {
       <text class="title-bar__text">
         {{ title }}
       </text>
-      <text class="title-bar__sub">
+      <text
+        v-if="page > 0"
+        class="title-bar__sub"
+      >
         共 {{ total }} 篇文章
       </text>
     </view>

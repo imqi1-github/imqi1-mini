@@ -42,7 +42,10 @@ function markOf(item: TravelItem) {
       <text class="title-bar__text">
         足迹
       </text>
-      <text class="title-bar__sub">
+      <text
+        v-if="!loading"
+        class="title-bar__sub"
+      >
         去过 {{ travelCount }} 个地方
       </text>
     </view>
