@@ -2,11 +2,19 @@
 import { ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { fetchChangelogs } from '@/api/changelog'
+import ChangelogEntry from '@/components/changelog-entry/changelog-entry.vue'
+import { parseEntryBlocks } from '@/utils/changelog-entry'
 import type { ChangelogGroup, ChangelogType } from '@/types/changelog'
 
 const groups = ref<ChangelogGroup[]>([])
 const loading = ref(true)
 const error = ref('')
+
+// 变更内容支持简易 Markdown：行内（粗体 / 斜体 / 行内码 / 链接）与
+// 块级列表（有序 / 无序 / 嵌套），解析成块级节点交给 ChangelogEntry 渲染。
+function parseEntry(value: string) {
+  return parseEntryBlocks(value)
+}
 
 // 变更类别 → 徽标配色 class；未知类别回退到「其他」
 const TAG_CLASS: Record<ChangelogType, string> = {
@@ -116,9 +124,9 @@ onLoad(async () => {
                 >
                   {{ entry.type }}
                 </text>
-                <text class="change__text">
-                  {{ entry.value }}
-                </text>
+                <view class="change__text">
+                  <changelog-entry :blocks="parseEntry(entry.value)" />
+                </view>
               </view>
             </view>
           </view>
@@ -278,8 +286,5 @@ onLoad(async () => {
 .change__text {
   flex: 1;
   min-width: 0;
-  font-size: 27rpx;
-  line-height: 1.6;
-  color: var(--ink);
 }
 </style>

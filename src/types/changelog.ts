@@ -1,5 +1,7 @@
 // 更新日志展示用类型（数据来自主站 /api/mini/changelogs）
 
+import type { InlineSpan } from '@/types/markdown'
+
 /** 变更类别，与主站 shared/changelog CHANGELOG_TYPES 保持一致 */
 export type ChangelogType = '功能' | '优化' | '修复' | '删除' | '设计' | '新增' | '其他'
 
@@ -26,4 +28,30 @@ export interface ChangelogGroup {
   year: number
   month: number
   logs: ChangelogLog[]
+}
+
+/**
+ * 变更内容解析后的块级节点：
+ * - text：普通文本行（行内支持粗体 / 斜体 / 行内码 / 链接）
+ * - list：有序 / 无序列表，item 可含子列表（嵌套）
+ */
+export type EntryBlock = EntryTextBlock | EntryListBlock
+
+/** 文本块 */
+export interface EntryTextBlock {
+  type: 'text'
+  spans: InlineSpan[]
+}
+
+/** 列表块（有序 / 无序） */
+export interface EntryListBlock {
+  type: 'list'
+  ordered: boolean
+  items: EntryListItem[]
+}
+
+/** 列表项：一行行内内容 + 可选子块（嵌套列表） */
+export interface EntryListItem {
+  spans: InlineSpan[]
+  children: EntryBlock[]
 }

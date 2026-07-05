@@ -50,6 +50,8 @@ const MUSIC_OPEN_RE = /^:::\s*music\s+(.+)$/
 const REPO_OPEN_RE = /^:::\s*repo\s+(https:\/\/(?:github|gitee)\.com\/\S+)\s*$/
 // 实况照片：::: live-photo URL 标题（不做实况交互，抽出图片当普通图片显示）
 const LIVE_PHOTO_OPEN_RE = /^:::\s*live-photo\s+(.+)$/
+// 视频：::: video <URL>（用原生 <video> 播放）
+const VIDEO_OPEN_RE = /^:::\s*video\s+(\S+)\s*$/
 const CONTAINER_CLOSE_RE = /^:::\s*$/
 
 /** 收集全文的引用式链接/图片定义，label 统一小写便于查找 */
@@ -469,6 +471,18 @@ function parseBlocks(lines: string[], refs: Map<string, string>): MarkdownBlock[
       const [src = '', ...captionParts] = livePhotoOpen[1].trim().split(/\s+/)
       if (src) {
         blocks.push({ type: 'image', src, alt: captionParts.join(' ').trim(), isLive: true })
+      }
+      continue
+    }
+
+    // 视频：::: video <URL>（容器体忽略，用原生 <video> 播放）
+    const videoOpen = VIDEO_OPEN_RE.exec(trimmed)
+    if (videoOpen) {
+      flushParagraph()
+      i = collectContainerBody(lines, i + 1).next
+      const src = videoOpen[1].trim()
+      if (src) {
+        blocks.push({ type: 'video', src })
       }
       continue
     }

@@ -14,3 +14,11 @@ export const siteOrigin = (() => {
 // 留空则请求不带签名头（后端未配置密钥时也不校验，二者需同步开关）。
 export const miniApiSecret = import.meta.env.VITE_MINI_API_SECRET ?? ''
 
+// 代码块等宽字体：复用主站 Nerd Font 化的 JetBrains Mono（含终端图标 PUA 字形），
+// 系统等宽字体缺这些图标会显示豆腐块。字体托管在 CDN，靠 uni.loadFontFace 按需加载。
+// 注：CDN 有 Referer 防盗链，微信小程序请求自带 servicewechat.com referer，已在白名单内；
+// 但 cdn.imqi1.com 需加入微信「downloadFile 合法域名」，否则真机加载失败。
+export const codeFontFamily = 'JetBrainsMono'
+export const codeFontUrl = 'https://cdn.imqi1.com/fonts/JetBrainsMono-Rest.woff2'
+
+

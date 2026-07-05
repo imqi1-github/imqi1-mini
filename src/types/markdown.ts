@@ -196,6 +196,13 @@ export interface RepoBlock {
   url: string
 }
 
+/** 视频块（::: video <URL>），用原生 <video> 播放 */
+export interface VideoBlock {
+  type: 'video'
+  /** 视频地址 */
+  src: string
+}
+
 export type MarkdownBlock
   = | HeadingBlock
     | ParagraphBlock
@@ -212,3 +219,4 @@ export type MarkdownBlock
     | WaterfallBlock
     | MusicBlock
     | RepoBlock
+    | VideoBlock

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { siteConfig } from '@/site.config'
 import WaterfallGrid from '@/components/waterfall-grid/waterfall-grid.vue'
 import MusicPlayer from '@/components/music-player/music-player.vue'
@@ -7,16 +7,29 @@ import RepoCard from '@/components/repo-card/repo-card.vue'
 import LivePhoto from '@/components/live-photo/live-photo.vue'
 import type { CalloutType, MarkdownBlock } from '@/types/markdown'
 import { isLivePhoto } from '@/utils/live-photo'
+import { ensureCodeFont } from '@/utils/code-font'
 
 // 递归渲染 Markdown 块级节点。折叠面板（details）的内容再引用 <markdown-nodes>
 // 渲染 children，自引用靠下方 defineOptions 的 name 解析（Vue 内建递归组件机制，
 // 父页面需显式 import 本组件）。小程序无法用 v-html，故全部用原生 view/text 渲染。
 defineOptions({ name: 'MarkdownNodes' })
 
-defineProps<{
+const props = defineProps<{
   /** 待渲染的块级节点数组 */
   blocks: MarkdownBlock[]
 }>()
+
+// 含代码块时按需加载 Nerd Font 图标字体（否则终端图标显示为豆腐块）。
+// ensureCodeFont 幂等，嵌套容器里的代码块在各自层级触发也只会加载一次。
+watch(
+  () => props.blocks,
+  (blocks) => {
+    if (blocks.some(b => b.type === 'code')) {
+      ensureCodeFont()
+    }
+  },
+  { immediate: true },
+)
 
 // 提示框图标（小程序无 svg，用 emoji 表意，配色见 style）
 const CALLOUT_ICON: Record<CalloutType, string> = {
@@ -422,6 +435,22 @@ function previewImages(urls: string[], current: string) {
       :repo="block.repo"
       :url="block.url"
     />
+
+    <!-- 视频：原生 <video> 播放，带控制条 -->
+    <view
+      v-else-if="block.type === 'video'"
+      class="md-video"
+    >
+      <video
+        class="md-video__player"
+        :src="block.src"
+        :controls="true"
+        :show-center-play-btn="true"
+        :enable-progress-gesture="true"
+        object-fit="contain"
+        preload="metadata"
+      />
+    </view>
   </block>
 </template>
 
@@ -445,7 +474,7 @@ function previewImages(urls: string[], current: string) {
 .md-inline--code {
   padding: 2rpx 10rpx;
   margin: 0 4rpx;
-  font-family: 'SFMono-Regular', Consolas, Menlo, monospace;
+  font-family: 'JetBrainsMono', 'SFMono-Regular', Consolas, Menlo, monospace;
   font-size: 26rpx;
   color: var(--brand-2);
   background: var(--line);
@@ -571,7 +600,9 @@ function previewImages(urls: string[], current: string) {
 }
 
 .md-code__token {
-  font-family: 'SFMono-Regular', Consolas, Menlo, monospace;
+  /* JetBrainsMono 为 Nerd Font 化字体（含终端图标 PUA 字形），由 ensureCodeFont 按需加载；
+     未加载完成时回退系统等宽字体，图标暂显豆腐块，加载后自动刷新。 */
+  font-family: 'JetBrainsMono', 'SFMono-Regular', Consolas, Menlo, monospace;
   font-size: 26rpx;
   line-height: 1.7;
   color: var(--code-ink);
@@ -907,5 +938,18 @@ function previewImages(urls: string[], current: string) {
   color: #fff;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+/* ===== 视频 ===== */
+.md-video {
+  margin: 32rpx 0;
+}
+
+.md-video__player {
+  width: 100%;
+  height: 422rpx; /* 约 16:9（750rpx 宽） */
+  overflow: hidden;
+  background: #000;
+  border-radius: 16rpx;
 }
 </style>

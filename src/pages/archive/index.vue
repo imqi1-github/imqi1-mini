@@ -66,7 +66,6 @@ function goArticle(item: ArchiveArticle) {
         class="month"
       >
         <view class="month__head">
-          <view class="month__dot" />
           <text class="month__title">
             {{ group.title }}
           </text>
@@ -151,36 +150,12 @@ function goArticle(item: ArchiveArticle) {
   margin-bottom: 36rpx;
 }
 
-.month::before {
-  content: '';
-  position: absolute;
-  top: 34rpx;
-  bottom: -36rpx;
-  left: 23rpx;
-  width: 3rpx;
-  background: rgb(59 130 246 / 24%);
-}
-
-.month:last-child::before {
-  bottom: 0;
-}
-
 .month__head {
   position: relative;
   z-index: 1;
   display: flex;
   align-items: center;
   padding: 0 16rpx 20rpx 8rpx;
-}
-
-.month__dot {
-  width: 18rpx;
-  height: 18rpx;
-  margin-right: 22rpx;
-  border: 8rpx solid rgb(59 130 246 / 16%);
-  border-radius: 50%;
-  background: var(--brand);
-  background-clip: content-box;
 }
 
 .month__title {
@@ -199,7 +174,6 @@ function goArticle(item: ArchiveArticle) {
 .month__body {
   position: relative;
   z-index: 1;
-  margin-left: 64rpx;
   overflow: hidden;
   border-radius: 22rpx;
   background: var(--card);
