@@ -155,7 +155,7 @@ const showFormHere = computed(() => ctx.replyTo.value?.id === props.comment.id)
   }
 
   &__action {
-    font-size: 24rpx;
+    font-size: 22rpx;
     color: var(--muted);
 
     &:active {

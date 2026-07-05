@@ -164,7 +164,8 @@ function coverRatio(item: CategoryPost) {
             class="photo-card__count"
           >
             <wd-icon
-              name="picture"
+              class-prefix="ri"
+              name="image-line"
               custom-class="photo-card__count-icon"
             />
             <text class="photo-card__count-text">
@@ -210,8 +211,9 @@ function coverRatio(item: CategoryPost) {
           </text>
         </view>
         <wd-icon
-          name="arrow-right"
-          size="28rpx"
+          class-prefix="ri"
+          name="arrow-right-s-line"
+          custom-class="post-item__arrow"
         />
       </view>
     </view>
@@ -418,6 +420,11 @@ function coverRatio(item: CategoryPost) {
 .post-item__time {
   margin-top: 8rpx;
   font-size: 22rpx;
+  color: var(--muted);
+}
+
+:deep(.post-item__arrow) {
+  font-size: 28rpx;
   color: var(--muted);
 }
 

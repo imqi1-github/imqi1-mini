@@ -38,8 +38,9 @@ function onItem(item: AboutInfo) {
         >
           <view class="row__icon">
             <wd-icon
+              class-prefix="ri"
               :name="item.icon"
-              size="34rpx"
+              custom-class="row__icon-glyph"
             />
           </view>
           <text class="row__label">
@@ -53,8 +54,9 @@ function onItem(item: AboutInfo) {
             class="row__chevron"
           >
             <wd-icon
-              name="arrow-right"
-              size="28rpx"
+              class-prefix="ri"
+              name="arrow-right-s-line"
+              custom-class="row__chevron-icon"
             />
           </view>
         </view>
@@ -77,8 +79,9 @@ function onItem(item: AboutInfo) {
         >
           <view class="row__icon">
             <wd-icon
+              class-prefix="ri"
               :name="item.icon"
-              size="34rpx"
+              custom-class="row__icon-glyph"
             />
           </view>
           <text class="row__label">
@@ -89,8 +92,9 @@ function onItem(item: AboutInfo) {
           </text>
           <view class="row__chevron">
             <wd-icon
-              name="arrow-right"
-              size="28rpx"
+              class-prefix="ri"
+              name="arrow-right-s-line"
+              custom-class="row__chevron-icon"
             />
           </view>
         </view>
@@ -139,7 +143,7 @@ function onItem(item: AboutInfo) {
 
 /* ===== 标题 ===== */
 .title-bar {
-  padding: 40rpx 40rpx 8rpx;
+  padding: 40rpx 24rpx 8rpx;
 }
 
 .title-bar__text {
@@ -156,7 +160,6 @@ function onItem(item: AboutInfo) {
 
 .section__head {
   margin-bottom: 24rpx;
-  padding: 0 16rpx;
 }
 
 .section__name {
@@ -196,11 +199,13 @@ function onItem(item: AboutInfo) {
   justify-content: center;
   width: 56rpx;
   height: 56rpx;
-  margin-right: 20rpx;
-  border-radius: 14rpx;
-  background: var(--line);
   color: var(--brand);
   flex-shrink: 0;
+}
+
+/* wd-icon 在 mp-weixin 下 virtualHost 会丢弃 size 行内样式，字号走 custom-class + :deep */
+:deep(.row__icon-glyph) {
+  font-size: 34rpx;
 }
 
 .row__label {
@@ -221,6 +226,10 @@ function onItem(item: AboutInfo) {
   margin-left: 12rpx;
   color: var(--muted);
   flex-shrink: 0;
+}
+
+:deep(.row__chevron-icon) {
+  font-size: 28rpx;
 }
 
 /* ===== 技术栈 ===== */

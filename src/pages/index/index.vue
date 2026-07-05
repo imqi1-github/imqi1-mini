@@ -108,8 +108,9 @@ const goArchive = () => {
         >
           <text>查看全部</text>
           <wd-icon
-            name="arrow-right"
-            size="28rpx"
+            class-prefix="ri"
+            name="arrow-right-s-line"
+            custom-class="section__more-icon"
           />
         </view>
       </view>
@@ -159,8 +160,9 @@ const goArchive = () => {
               </text>
               <view class="card__meta">
                 <wd-icon
-                  name="clock"
-                  size="22rpx"
+                  class-prefix="ri"
+                  name="time-line"
+                  custom-class="card__time-icon"
                 />
                 <text class="card__time">
                   {{ a.publishedAt }}
@@ -305,7 +307,6 @@ const goArchive = () => {
   align-items: flex-end;
   justify-content: space-between;
   margin-bottom: 32rpx;
-  padding: 0 16rpx;
 }
 
 .section__title {
@@ -329,6 +330,10 @@ const goArchive = () => {
   text {
     margin-right: 6rpx;
   }
+}
+
+:deep(.section__more-icon) {
+  font-size: 28rpx;
 }
 
 /* ===== 卡片网格 ===== */
@@ -395,6 +400,12 @@ const goArchive = () => {
 .card__time {
   margin-left: 8rpx;
   font-size: 22rpx;
+}
+
+/* wd-icon 在 mp-weixin 下 virtualHost 会丢弃 size 生成的行内 style，
+   故字号走 custom-class + :deep（与本项目其他图标一致） */
+:deep(.card__time-icon) {
+  font-size: 20rpx;
 }
 
 /* ===== 底部 ===== */

@@ -13,6 +13,10 @@ onHide(() => {
 </script>
 
 <style lang="scss">
+/* Remix Icon 子集（base64 内联，供 wd-icon class-prefix="ri" 使用）。
+   小程序真机不能用相对路径加载本地字体，故内联；新增图标改 scripts/subset-remixicon.py 后重跑。 */
+@import '@/static/icon/remixicon-subset.css';
+
 /* 全局样式：每个页面公共 css */
 page {
   /* wot-design-uni 主题色覆盖：现代蓝 */

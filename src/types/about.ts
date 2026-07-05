@@ -6,7 +6,7 @@ export interface AboutInfo {
   label: string
   /** 值，如「ImQi1」「imqi1@qq.com」 */
   value: string
-  /** wd-icon 名称 */
+  /** 图标名（Remix Icon，不含 ri- 前缀，如 window-fill），配合 wd-icon class-prefix="ri" */
   icon: string
   /** 点击行为：copy 复制值到剪贴板；不填则仅展示 */
   action?: 'copy'

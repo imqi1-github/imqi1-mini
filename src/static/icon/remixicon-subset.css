@@ -1,0 +1,27 @@
+/* 由 scripts/subset-remixicon.py 自动生成，请勿手改。
+ * 新增图标：改脚本 ICONS 列表后重跑。 */
+@font-face {
+  font-family: "remixicon";
+  src: url("data:font/woff2;charset=utf-8;base64,d09GMgABAAAAAASMAAsAAAAACQQAAAQ/AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHCoGYACBCAqLPIlTATYCJAMcCxoABCAFgSQHIBs+BwDGJ35THxIiRupTcaQmhFldYHMyF4lc+z8RBZ6PtVZPNG7buWRoiWRiecy/Wf7iWsWbWzJNNCKEIibTadEaT9nGQ8XkpFH/BwKABY3RFOTAwSM5OFKTctMRARoAdB3kepo+RCyCASB/UUMB7OJTkX3Rnei0PQwU4O/GyoMkXHpt+nyd+quPRCo9CccBECC5JDopO4TLJnqDRm6XCLCgYHpNfzv9zbh3zvcj3p96/+VDyIfVn52fr+s6YE1z8o9Df4UuCzkS9M11BnCFsF/ZTPsf++Cjz3GAhBgwyLZxzoiBdQHiCEBevhPxSc7SIGEgu0kH9bFqDjtTLcLB0DTNGmh7/fosExRkt7PmaqEMa2go8fA+32oqnNdraoLfb6piIGDHTuphC8Qnc1jjvKKnQPVLeKoSclyOILolISkxxk8Mw/ajllrVzWeNJohJevrPQ+FbcSW0ssvCansIo7rX6oyyEDbGmW+FBXbY2lze3Ojy7Abjfv9oiqUnumXJma2dOaAePOs5vV/Zd6qA99EGzss19aKcMqVB5M95fWS/QJ8WVwP+3kKScJEFjvH2bHrJ6+vFc4KjtkANRAvmlhzGOiOWJs49Ucg4b9mtXAzO1XyUHD6kuw+X7Dl7UD1wRju1T9l/mtf8ftVDPZ0qQcEST2ofSJZSxeOshVbl0j3twRUi7c6OcrdmEm4UJcO8yxgrbJT1JLsXsaQrH1bC2p7XaPoqObZxZCNNaxTZOPZegUVEhXr2e9j12oYuE0a3Gtv2RAOL2KFyZO2xdQ4kUpe3W5oNbNJk4HgA8sdjN8zb+v37oMG9CFwHpIaYuncftpRaLh/qHnJ5/FaIraW02M5RHTtGdY6tAlhEVHlVeGGa1FpEnSXotyVVC70XWrd1zti38c2437+v1D3XaO4KqfMsqsfyWm5xvqJdi6/TE758aXGqRQtZXiourFG1v/P+qs7cfpjnHjyof//wmLBIWhAeLakLK2PCxQpXPHOmSUUADhg8WK9XUU9JSFCmKp39qFDdsJgVz4xLHTxo1zvAnCLPOOHnVR7u6+wzQh1SPKTfCIiu7z8G9A+P3lHjrFnR4ZEDHJKlx+OA7zN69RL4Wnm1smjKvH378mpn1YRDsvR4zOlVedn7VE/pHNOpU0xap2jWTkVHtCPmHmg0/ULxpF7uHj3cPSeVXJpxqQSYUH1vk3oWG58e/12/mjpQrVYP4pi3aLHulAebqd3bhoW3pJbx0h3p2zkrvu6Vuu/mSsSNHAK/8EsvZn6Cs+c3k5k+BADPNn3aAADPM87tQ5I+kx5DPQFgAhkpP+1sRKy5Qr1frF48RicS0W7DQBg6wwKLX7/JiGhQIGgzgBBATiQQhJBEEg40nkrZptKQaEAYOmYz8LbxcCMNk1GIuhiGFGQgHdl6QGbx7DwReUhFkoct9HCak6Q7pi46ojW6gQJJ3wYA") format("woff2");
+  font-display: swap;
+}
+
+.ri {
+  font-family: "remixicon" !important;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.ri-arrow-right-s-line::before { content: "\ea6e"; }
+.ri-time-line::before { content: "\f20f"; }
+.ri-image-line::before { content: "\ee4b"; }
+.ri-file-text-line::before { content: "\ed0f"; }
+.ri-map-pin-line::before { content: "\ef14"; }
+.ri-links-line::before { content: "\eeb8"; }
+.ri-chat-3-line::before { content: "\eb51"; }
+.ri-window-fill::before { content: "\f2c5"; }
+.ri-account-circle-fill::before { content: "\ea08"; }
+.ri-notification-fill::before { content: "\ef99"; }
+.ri-links-fill::before { content: "\eeb7"; }
+.ri-mail-fill::before { content: "\eef3"; }

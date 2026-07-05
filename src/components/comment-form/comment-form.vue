@@ -75,7 +75,6 @@ const { form, submitting, requireMail, requireLink, replyTo, cancelReply, submit
 .comment-form {
   padding-top: 24rpx;
   margin-top: 24rpx;
-  border-top: 1rpx solid var(--line);
 }
 
 .comment-form__reply-tip {

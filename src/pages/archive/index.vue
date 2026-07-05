@@ -90,8 +90,9 @@ function goArticle(item: ArchiveArticle) {
                 {{ item.title }}
               </text>
               <wd-icon
-                name="arrow-right"
-                size="28rpx"
+                class-prefix="ri"
+                name="arrow-right-s-line"
+                custom-class="article__arrow"
               />
             </view>
           </view>
@@ -113,7 +114,7 @@ function goArticle(item: ArchiveArticle) {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  padding: 40rpx 40rpx 8rpx;
+  padding: 40rpx 24rpx 8rpx;
 }
 
 .title-bar__text {
@@ -211,6 +212,10 @@ function goArticle(item: ArchiveArticle) {
   min-width: 0;
   margin-left: 22rpx;
   color: var(--muted);
+}
+
+:deep(.article__arrow) {
+  font-size: 28rpx;
 }
 
 .article__title {

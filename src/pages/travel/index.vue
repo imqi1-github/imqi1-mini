@@ -107,7 +107,8 @@ function markOf(item: TravelItem) {
             @tap="goPost(post)"
           >
             <wd-icon
-              :name="post.photo ? 'picture' : 'note'"
+              class-prefix="ri"
+              :name="post.photo ? 'image-line' : 'file-text-line'"
               custom-class="travel-post__icon"
             />
             <text class="travel-post__title">
@@ -134,7 +135,7 @@ function markOf(item: TravelItem) {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  padding: 40rpx 40rpx 8rpx;
+  padding: 40rpx 24rpx 8rpx;
 }
 
 .title-bar__text {

@@ -55,10 +55,10 @@ function markOf(item: CategoryItem) {
 
 // 分类之外的独立页面入口（当前仅足迹/链接，后续可扩展）
 const extraPages = [
-  { key: 'travel', title: '足迹', icon: 'location', url: '/pages/travel/index' },
-  { key: 'link', title: '链接', icon: 'link', url: '/pages/link/index' },
-  { key: 'messages', title: '留言', icon: 'chat', url: '/pages/messages/index' },
-  { key: 'changelog', title: '更新日志', icon: 'note', url: '/pages/changelog/index' },
+  { key: 'travel', title: '足迹', icon: 'map-pin-line', url: '/pages/travel/index' },
+  { key: 'link', title: '链接', icon: 'links-line', url: '/pages/link/index' },
+  { key: 'messages', title: '留言', icon: 'chat-3-line', url: '/pages/messages/index' },
+  { key: 'changelog', title: '更新日志', icon: 'file-text-line', url: '/pages/changelog/index' },
 ]
 
 // 主站关闭评论时移除「留言」入口
@@ -152,6 +152,7 @@ function goPage(url: string) {
           @tap="goPage(page.url)"
         >
           <wd-icon
+            class-prefix="ri"
             :name="page.icon"
             custom-class="page-chip__icon"
           />
@@ -175,7 +176,7 @@ function goPage(url: string) {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  padding: 40rpx 40rpx 8rpx;
+  padding: 40rpx 24rpx 8rpx;
 }
 
 .title-bar__text {
@@ -238,7 +239,7 @@ function goPage(url: string) {
 }
 
 :deep(.page-chip__icon) {
-  font-size: 36rpx;
+  font-size: 32rpx;
   color: var(--brand);
 }
 
@@ -274,7 +275,7 @@ function goPage(url: string) {
   overflow: hidden;
   border-radius: 24rpx;
   background: linear-gradient(135deg, #4f8cff 0%, #2563eb 100%);
-  box-shadow: 0 10rpx 22rpx rgb(37 99 235 / 22%);
+  box-shadow: 0 6rpx 14rpx rgb(37 99 235 / 14%);
   flex-shrink: 0;
 }
 

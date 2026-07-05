@@ -147,7 +147,7 @@ onLoad(async () => {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  padding: 40rpx 40rpx 8rpx;
+  padding: 40rpx 24rpx 8rpx;
 }
 
 .title-bar__text {
@@ -241,6 +241,7 @@ onLoad(async () => {
 
 .tag {
   padding: 4rpx 14rpx;
+  margin-top: 4rpx;
   font-size: 22rpx;
   font-weight: 700;
   line-height: 1.5;
