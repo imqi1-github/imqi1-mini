@@ -167,7 +167,6 @@ const showFormHere = computed(() => ctx.replyTo.value?.id === props.comment.id)
   &__children {
     padding-left: 24rpx;
     margin-left: 8rpx;
-    border-left: 2rpx solid var(--line);
   }
 }
 </style>

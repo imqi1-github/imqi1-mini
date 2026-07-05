@@ -398,14 +398,14 @@ const goArchive = () => {
 }
 
 .card__time {
-  margin-left: 8rpx;
+  margin-left: 4Frpx;
   font-size: 22rpx;
 }
 
 /* wd-icon 在 mp-weixin 下 virtualHost 会丢弃 size 生成的行内 style，
    故字号走 custom-class + :deep（与本项目其他图标一致） */
 :deep(.card__time-icon) {
-  font-size: 20rpx;
+  font-size: 22rpx;
 }
 
 /* ===== 底部 ===== */

@@ -73,7 +73,7 @@ const { form, submitting, requireMail, requireLink, replyTo, cancelReply, submit
 
 <style lang="scss" scoped>
 .comment-form {
-  padding-top: 24rpx;
+  margin-block: 12rpx;
   margin-top: 24rpx;
 }
 
