@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
-import { fetchPostDetail } from '@/api/post'
+import { fetchContentDetail } from '@/api/content'
 import CommentSection from '@/components/comment-section/comment-section.vue'
 import MarkdownNodes from '@/components/markdown-nodes/markdown-nodes.vue'
 import LivePhoto from '@/components/live-photo/live-photo.vue'
-import type { PostDetail, PostCategory, PostCover } from '@/types/post'
+import type { ContentDetail, ContentCategory, ContentCover } from '@/types/content'
 import type { MarkdownBlock } from '@/types/markdown'
 import { parseMarkdown } from '@/utils/markdown'
 import { isLivePhoto } from '@/utils/live-photo'
 
-const post = ref<PostDetail | null>(null)
+const content = ref<ContentDetail | null>(null)
 const loading = ref(true)
 const error = ref('')
 // 是否图片版式：从图片分类进入时 URL 带 photo=1，大图在上、信息在下
@@ -23,10 +23,10 @@ try {
 }
 catch {}
 
-const postId = ref(0)
+const contentId = ref(0)
 
 const blocks = computed<MarkdownBlock[]>(() =>
-  post.value ? parseMarkdown(post.value.content) : [],
+  content.value ? parseMarkdown(content.value.content) : [],
 )
 
 // 正文是否有内容：为空时头部不显示分隔用的下边框
@@ -36,9 +36,9 @@ async function load(id: number) {
   loading.value = true
   error.value = ''
   try {
-    post.value = await fetchPostDetail(id)
-    if (post.value.title) {
-      uni.setNavigationBarTitle({ title: post.value.title })
+    content.value = await fetchContentDetail(id)
+    if (content.value.title) {
+      uni.setNavigationBarTitle({ title: content.value.title })
     }
   }
   catch (e) {
@@ -58,15 +58,15 @@ onLoad((query) => {
     return
   }
   isPhoto.value = query?.photo === '1'
-  postId.value = id
+  contentId.value = id
   load(id)
 })
 
 // 图片版式下用于轮播的封面列表；兜底用首图，避免 covers 为空但有单封面
-const galleryCovers = computed<PostCover[]>(() => {
-  if (!post.value) return []
-  if (post.value.covers.length) return post.value.covers
-  return post.value.cover ? [{ url: post.value.cover, title: '' }] : []
+const galleryCovers = computed<ContentCover[]>(() => {
+  if (!content.value) return []
+  if (content.value.covers.length) return content.value.covers
+  return content.value.cover ? [{ url: content.value.cover, title: '' }] : []
 })
 
 function previewCover(index: number) {
@@ -79,7 +79,7 @@ function previewImage(src: string) {
   uni.previewImage({ urls: [src], current: src })
 }
 
-function goCategory(cat: PostCategory) {
+function goCategory(cat: ContentCategory) {
   if (!cat.slug) return
   const url = `/pages/category/detail?slug=${encodeURIComponent(cat.slug)}&name=${encodeURIComponent(cat.name)}`
   uni.navigateTo({ url })
@@ -102,7 +102,7 @@ function goCategory(cat: PostCategory) {
       {{ error }}
     </view>
 
-    <template v-else-if="post">
+    <template v-else-if="content">
       <!-- 图片版式头部：封面占满屏宽在上，标题/描述/分类在下 -->
       <template v-if="isPhoto">
         <!-- 多图轮播 -->
@@ -168,24 +168,24 @@ function goCategory(cat: PostCategory) {
           :class="{ 'photo-meta--no-border': !hasContent }"
         >
           <text class="header__title">
-            {{ post.title }}
+            {{ content.title }}
           </text>
           <text
-            v-if="post.description"
+            v-if="content.description"
             class="photo-meta__desc"
           >
-            {{ post.description }}
+            {{ content.description }}
           </text>
           <text class="header__time">
-            {{ post.publishedAt }}
+            {{ content.publishedAt }}
           </text>
 
           <view
-            v-if="post.categories.length"
+            v-if="content.categories.length"
             class="header__cats"
           >
             <text
-              v-for="cat in post.categories"
+              v-for="cat in content.categories"
               :key="cat.mid"
               class="cat-tag"
               @tap="goCategory(cat)"
@@ -242,33 +242,33 @@ function goCategory(cat: PostCategory) {
         </swiper>
         <!-- 单图 -->
         <live-photo
-          v-else-if="post.cover && isLivePhoto(post.cover)"
+          v-else-if="content.cover && isLivePhoto(content.cover)"
           class="header__cover"
-          :src="post.cover"
+          :src="content.cover"
           mode="aspectFill"
           :fill="true"
         />
         <image
-          v-else-if="post.cover"
+          v-else-if="content.cover"
           class="header__cover"
-          :src="post.cover"
+          :src="content.cover"
           mode="aspectFill"
-          @tap="previewImage(post.cover)"
+          @tap="previewImage(content.cover)"
         />
         <text class="header__title">
-          {{ post.title }}
+          {{ content.title }}
         </text>
         <text class="header__time">
-          {{ post.publishedAt }}
+          {{ content.publishedAt }}
         </text>
 
         <!-- 所属分类 -->
         <view
-          v-if="post.categories.length"
+          v-if="content.categories.length"
           class="header__cats"
         >
           <text
-            v-for="cat in post.categories"
+            v-for="cat in content.categories"
             :key="cat.mid"
             class="cat-tag"
             @tap="goCategory(cat)"
@@ -287,7 +287,7 @@ function goCategory(cat: PostCategory) {
       </view>
 
       <!-- 评论区 -->
-      <comment-section :cid="postId" />
+      <comment-section :cid="contentId" />
     </template>
   </view>
 </template>

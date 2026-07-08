@@ -125,7 +125,7 @@ function goPage(url: string) {
                 {{ item.name }}
               </text>
               <text class="category-card__count">
-                {{ item.postCount }} 篇
+                {{ item.contentCount }} 篇
               </text>
             </view>
             <text

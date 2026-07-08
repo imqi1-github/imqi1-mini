@@ -1,6 +1,6 @@
-import type { ArticleCard } from '@/types/post'
+import type { ArticleCard } from '@/types/content'
 import { request } from '@/utils/request'
 
-export function fetchLatestPosts() {
-  return request<ArticleCard[]>('/latest-posts')
+export function fetchLatestContents() {
+  return request<ArticleCard[]>('/latest-contents')
 }

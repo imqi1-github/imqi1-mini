@@ -11,15 +11,15 @@ export interface CategoryItem {
   /** 分类说明，可能为空 */
   desc: string | null
   /** 该分类文章数量 */
-  postCount: number
+  contentCount: number
   /** 最新一篇文章的封面（已转绝对地址），无封面时为空串 */
   cover: string
   /** 最新一篇文章标题，封面缺失时用作图标文字兜底 */
   latestTitle: string
 }
 
-/** 分类详情页文章条目（来自 /mini/category/[slug]/posts） */
-export interface CategoryPost {
+/** 分类详情页文章条目（来自 /mini/category/[slug]/contents） */
+export interface CategoryContent {
   /** 文章唯一 id，用作列表 key */
   id: number
   /** 文章标题 */
@@ -47,13 +47,13 @@ export interface CategoryPagination {
 }
 
 /** 分类详情页响应数据 */
-export interface CategoryPostsData {
+export interface CategoryContentsData {
   category: {
     mid: number
     name: string
     slug: string
     desc: string | null
   }
-  posts: CategoryPost[]
+  contents: CategoryContent[]
   pagination: CategoryPagination
 }

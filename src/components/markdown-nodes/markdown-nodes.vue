@@ -46,7 +46,7 @@ function toggleDetails(index: number) {
   openMap.value = { ...openMap.value, [index]: !openMap.value[index] }
 }
 
-// 以 / 开头的根相对链接（如 /posts/1）不含域名，直接复制不可用；
+// 以 / 开头的根相对链接（如 /contents/1）不含域名，直接复制不可用；
 // 用配置的网页版站点地址补全为完整地址。// 双斜杠 // 开头（协议相对）与含协议的绝对地址原样返回。
 function resolveHref(href: string) {
   if (href.startsWith('/') && !href.startsWith('//') && siteConfig.siteUrl) {

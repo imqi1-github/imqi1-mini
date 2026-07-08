@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { fetchTravels } from '@/api/travel'
-import type { TravelItem, TravelPost } from '@/types/travel'
+import type { TravelItem, TravelContent } from '@/types/travel'
 
 const travels = ref<TravelItem[]>([])
 const loading = ref(true)
@@ -21,11 +21,11 @@ onLoad(async () => {
   }
 })
 
-function goPost(post: TravelPost) {
+function goContent(content: TravelContent) {
   // 图片文章带 photo=1，详情页据此切换为图片版式，与图片分类进入一致
-  const url = post.photo
-    ? `/pages/post/detail?id=${post.id}&photo=1`
-    : `/pages/post/detail?id=${post.id}`
+  const url = content.photo
+    ? `/pages/content/detail?id=${content.id}&photo=1`
+    : `/pages/content/detail?id=${content.id}`
   uni.navigateTo({ url })
 }
 
@@ -97,22 +97,22 @@ function markOf(item: TravelItem) {
 
         <!-- 关联文章 -->
         <view
-          v-if="item.posts.length"
-          class="travel-card__posts"
+          v-if="item.contents.length"
+          class="travel-card__contents"
         >
           <view
-            v-for="post in item.posts"
-            :key="post.id"
-            class="travel-post"
-            @tap="goPost(post)"
+            v-for="content in item.contents"
+            :key="content.id"
+            class="travel-content"
+            @tap="goContent(content)"
           >
             <wd-icon
               class-prefix="ri"
-              :name="post.photo ? 'image-line' : 'file-text-line'"
+              :name="content.photo ? 'image-line' : 'file-text-line'"
               custom-class="travel-post__icon"
             />
             <text class="travel-post__title">
-              {{ post.title }}
+              {{ content.title }}
             </text>
             <text class="travel-post__arrow">
               ›
@@ -231,13 +231,13 @@ function markOf(item: TravelItem) {
 }
 
 /* ===== 关联文章 ===== */
-.travel-card__posts {
+.travel-card__contents {
   margin-top: 20rpx;
   padding-top: 20rpx;
   border-top: 1rpx solid var(--line);
 }
 
-.travel-post {
+.travel-content {
   display: flex;
   align-items: center;
   padding: 16rpx 0;

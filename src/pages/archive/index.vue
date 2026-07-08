@@ -22,7 +22,7 @@ onLoad(async () => {
 })
 
 function goArticle(item: ArchiveArticle) {
-  uni.navigateTo({ url: `/pages/post/detail?id=${item.id}` })
+  uni.navigateTo({ url: `/pages/content/detail?id=${item.id}` })
 }
 </script>
 

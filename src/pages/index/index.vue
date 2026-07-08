@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
-import { fetchLatestPosts } from '@/api/home'
+import { fetchLatestContents } from '@/api/home'
 import { siteConfig } from '@/site.config'
-import type { ArticleCard } from '@/types/post'
+import type { ArticleCard } from '@/types/content'
 
 const articles = ref<ArticleCard[]>([])
 const loading = ref(true)
@@ -14,7 +14,7 @@ function getCoverFallback(title: string) {
 
 onLoad(async () => {
   try {
-    articles.value = await fetchLatestPosts()
+    articles.value = await fetchLatestContents()
   }
   catch (error) {
     console.error(error)
@@ -26,7 +26,7 @@ onLoad(async () => {
 })
 
 const goArticle = (a: ArticleCard) => {
-  uni.navigateTo({ url: `/pages/post/detail?id=${a.id}` })
+  uni.navigateTo({ url: `/pages/content/detail?id=${a.id}` })
 }
 // 浏览文章：跳转网页版。小程序无法直接打开外部网址，复制链接到剪贴板由用户在浏览器打开。
 const goWebsite = () => {

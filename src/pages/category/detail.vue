@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { onLoad, onReachBottom } from '@dcloudio/uni-app'
-import { fetchCategoryPosts } from '@/api/category'
+import { fetchCategoryContents } from '@/api/category'
 import { siteConfig } from '@/site.config'
-import type { CategoryPost } from '@/types/category'
+import type { CategoryContent } from '@/types/category'
 
 const slug = ref('')
 const title = ref('分类')
-const posts = ref<CategoryPost[]>([])
+const contents = ref<CategoryContent[]>([])
 const total = ref(0)
 const page = ref(0)
 const totalPages = ref(1)
@@ -19,23 +19,23 @@ const isPhoto = computed(() => siteConfig.category.photoCategorySlugs.includes(s
 
 // 双列瀑布流：按累计高度把文章分到较矮的一列，减少两列落差
 const columns = computed(() => {
-  const left: CategoryPost[] = []
-  const right: CategoryPost[] = []
+  const left: CategoryContent[] = []
+  const right: CategoryContent[] = []
   let leftH = 0
   let rightH = 0
 
-  for (const post of posts.value) {
+  for (const content of contents.value) {
     // 用封面宽高比估算相对高度，缺失时按 3:4 竖图估
-    const ratio = post.coverWidth && post.coverHeight
-      ? post.coverHeight / post.coverWidth
+    const ratio = content.coverWidth && content.coverHeight
+      ? content.coverHeight / content.coverWidth
       : 4 / 3
 
     if (leftH <= rightH) {
-      left.push(post)
+      left.push(content)
       leftH += ratio
     }
     else {
-      right.push(post)
+      right.push(content)
       rightH += ratio
     }
   }
@@ -49,9 +49,9 @@ async function loadMore() {
   loading.value = true
   try {
     const next = page.value + 1
-    const data = await fetchCategoryPosts(slug.value, next, siteConfig.category.pageSize)
+    const data = await fetchCategoryContents(slug.value, next, siteConfig.category.pageSize)
 
-    posts.value.push(...data.posts)
+    contents.value.push(...data.contents)
     page.value = data.pagination.page
     totalPages.value = data.pagination.totalPages
     total.value = data.pagination.total
@@ -84,11 +84,11 @@ onReachBottom(() => {
   loadMore()
 })
 
-function goArticle(item: CategoryPost) {
+function goArticle(item: CategoryContent) {
   // 图片分类进入时带 photo=1，详情页据此切换为「大图在上、信息在下」的图片版式
   const url = isPhoto.value
-    ? `/pages/post/detail?id=${item.id}&photo=1`
-    : `/pages/post/detail?id=${item.id}`
+    ? `/pages/content/detail?id=${item.id}&photo=1`
+    : `/pages/content/detail?id=${item.id}`
   uni.navigateTo({ url })
 }
 
@@ -98,7 +98,7 @@ function coverFallback(text: string) {
 
 // 加载前的占位高度：以百分比 padding-top 撑起（高/宽），小程序兼容性优于 aspect-ratio。
 // 缺失宽高时按 1:1 占位。
-function coverRatio(item: CategoryPost) {
+function coverRatio(item: CategoryContent) {
   if (item.coverWidth && item.coverHeight) {
     const ratio = (item.coverHeight / item.coverWidth) * 100
     return `${ratio.toFixed(2)}%`
@@ -186,12 +186,12 @@ function coverRatio(item: CategoryPost) {
     <!-- 普通分类：标题列表 -->
     <view
       v-else
-      class="post-list"
+      class="content-list"
     >
       <view
-        v-for="item in posts"
+        v-for="item in contents"
         :key="item.id"
-        class="post-item"
+        class="content-item"
         @tap="goArticle(item)"
       >
         <wd-img
@@ -200,20 +200,20 @@ function coverRatio(item: CategoryPost) {
           width="96rpx"
           height="96rpx"
           mode="aspectFill"
-          custom-class="post-item__cover"
+          custom-class="content-item__cover"
         />
-        <view class="post-item__body">
-          <text class="post-item__title">
+        <view class="content-item__body">
+          <text class="content-item__title">
             {{ item.title }}
           </text>
-          <text class="post-item__time">
+          <text class="content-item__time">
             {{ item.publishedAt }}
           </text>
         </view>
         <wd-icon
           class-prefix="ri"
           name="arrow-right-s-line"
-          custom-class="post-item__arrow"
+          custom-class="content-item__arrow"
         />
       </view>
     </view>
@@ -368,7 +368,7 @@ function coverRatio(item: CategoryPost) {
 }
 
 /* ===== 普通分类：标题列表 ===== */
-.post-list {
+.content-list {
   margin: 32rpx 24rpx 0;
   overflow: hidden;
   border-radius: 22rpx;
@@ -376,7 +376,7 @@ function coverRatio(item: CategoryPost) {
   box-shadow: 0 8rpx 24rpx rgb(15 23 42 / 6%);
 }
 
-.post-item {
+.content-item {
   display: flex;
   align-items: center;
   padding: 28rpx;
@@ -391,12 +391,12 @@ function coverRatio(item: CategoryPost) {
   }
 }
 
-.post-item__body {
+.content-item__body {
   flex: 1;
   min-width: 0;
 }
 
-:deep(.post-item__cover) {
+:deep(.content-item__cover) {
   flex-shrink: 0;
   width: 96rpx;
   height: 96rpx;
@@ -406,7 +406,7 @@ function coverRatio(item: CategoryPost) {
   background: var(--line);
 }
 
-.post-item__title {
+.content-item__title {
   display: block;
   overflow: hidden;
   font-size: 29rpx;
@@ -417,13 +417,13 @@ function coverRatio(item: CategoryPost) {
   white-space: nowrap;
 }
 
-.post-item__time {
+.content-item__time {
   margin-top: 8rpx;
   font-size: 22rpx;
   color: var(--muted);
 }
 
-:deep(.post-item__arrow) {
+:deep(.content-item__arrow) {
   font-size: 28rpx;
   color: var(--muted);
 }

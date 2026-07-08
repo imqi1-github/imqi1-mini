@@ -62,7 +62,7 @@
       }
     },
     {
-      "path": "pages/post/detail",
+      "path": "pages/content/detail",
       "style": {
         "navigationBarTitleText": "文章详情",
         "enablePullDownRefresh": false

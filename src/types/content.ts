@@ -15,7 +15,7 @@ export interface ArticleCard {
 }
 
 /** 文章所属分类 */
-export interface PostCategory {
+export interface ContentCategory {
   mid: number
   name: string
   /** 分类 slug，用于跳转分类详情页 */
@@ -23,13 +23,13 @@ export interface PostCategory {
 }
 
 /** 文章封面项：图片地址 + 标题，标题无则为空字符串 */
-export interface PostCover {
+export interface ContentCover {
   url: string
   title: string
 }
 
-/** 文章详情（来自 /mini/post/[id]），content 为 Markdown 原文 */
-export interface PostDetail {
+/** 文章详情（来自 /mini/content/[id]），content 为 Markdown 原文 */
+export interface ContentDetail {
   /** 文章唯一 id */
   id: number
   /** 文章标题 */
@@ -41,9 +41,9 @@ export interface PostDetail {
   /** 首张封面绝对地址，无封面时为空字符串 */
   cover: string
   /** 全部封面（含标题），可能为空数组 */
-  covers: PostCover[]
+  covers: ContentCover[]
   /** 文章所属分类，可能为空数组 */
-  categories: PostCategory[]
+  categories: ContentCategory[]
   /** 已格式化好的发布时间文本，如 "3 天前" */
   publishedAt: string
   /** 原始发布时间 ISO 字符串 */

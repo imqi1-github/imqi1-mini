@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, provide, ref, watch } from 'vue'
-import { fetchPostComments, submitComment } from '@/api/comment'
+import { fetchContentComments, submitComment } from '@/api/comment'
 import { commentFormKey } from '@/components/comment-node/context'
 import CommentForm from '@/components/comment-form/comment-form.vue'
 import CommentNodeItem from '@/components/comment-node/comment-node.vue'
@@ -51,7 +51,7 @@ async function loadComments(id: number) {
   if (!id || id <= 0) return
   commentsLoading.value = true
   try {
-    const result = await fetchPostComments(id)
+    const result = await fetchContentComments(id)
     comments.value = result.data
     requireMail.value = result.requireMail
     requireLink.value = result.requireLink

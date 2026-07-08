@@ -5,7 +5,7 @@ import { fetchMessagesConfig } from '@/api/messages'
 import CommentSection from '@/components/comment-section/comment-section.vue'
 
 // 留言板绑定的文章 id：<=0 表示未配置或加载中，评论区不加载。
-const postId = ref(0)
+const contentId = ref(0)
 const loading = ref(true)
 const error = ref('')
 // 小程序评论总开关关闭时，留言页视为不存在（展示 404）
@@ -19,8 +19,8 @@ onLoad(async () => {
       notFound.value = true
       return
     }
-    if (config.postId && config.postId > 0) {
-      postId.value = config.postId
+    if (config.contentId && config.contentId > 0) {
+      contentId.value = config.contentId
     }
     else {
       error.value = '留言板未配置'
@@ -79,7 +79,7 @@ onLoad(async () => {
     <!-- 评论区与文章详情页完全一致 -->
     <comment-section
       v-else
-      :cid="postId"
+      :cid="contentId"
       title="留言"
     />
   </view>

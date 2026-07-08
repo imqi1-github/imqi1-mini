@@ -11,7 +11,7 @@ interface CommentsEnvelope {
 }
 
 /** 获取某篇文章的评论树及表单必填项设置（仅审核通过的评论，后端已构建为嵌套结构） */
-export async function fetchPostComments(cid: number): Promise<CommentListResult> {
+export async function fetchContentComments(cid: number): Promise<CommentListResult> {
   const res = await requestFull<CommentsEnvelope>(`/comments?cid=${cid}`)
   return {
     data: res.data,

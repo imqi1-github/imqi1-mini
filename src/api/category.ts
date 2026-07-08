@@ -1,4 +1,4 @@
-import type { CategoryItem, CategoryPostsData } from '@/types/category'
+import type { CategoryItem, CategoryContentsData } from '@/types/category'
 import { request } from '@/utils/request'
 
 /** 获取全部分类 */
@@ -7,7 +7,7 @@ export function fetchCategories() {
 }
 
 /** 获取某个分类下的文章（分页） */
-export function fetchCategoryPosts(slug: string, page: number, pageSize: number) {
+export function fetchCategoryContents(slug: string, page: number, pageSize: number) {
   const query = `page=${page}&pageSize=${pageSize}`
-  return request<CategoryPostsData>(`/category/${encodeURIComponent(slug)}/posts?${query}`)
+  return request<CategoryContentsData>(`/category/${encodeURIComponent(slug)}/contents?${query}`)
 }
