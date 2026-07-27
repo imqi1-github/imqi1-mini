@@ -104,7 +104,7 @@ function markOf(item: LinkItem) {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  padding: 40rpx 40rpx 8rpx;
+  padding: 40rpx 24rpx 8rpx;
 }
 
 .title-bar__text {

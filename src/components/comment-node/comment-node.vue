@@ -3,6 +3,7 @@ import { computed, inject } from 'vue'
 import { commentFormKey } from '@/components/comment-node/context'
 import CommentForm from '@/components/comment-form/comment-form.vue'
 import type { CommentNode } from '@/types/comment'
+import { parseCommentContent } from '@/utils/emoji'
 
 // 递归评论节点：自身在模板里再引用 <comment-node> 渲染 children。
 // 自引用靠下方 defineOptions 的 name（CommentNode → kebab: comment-node）解析，
@@ -21,6 +22,10 @@ const ctx = inject(commentFormKey)!
 
 // 表单是否应挂在本节点上方：当前回复目标正是本条评论。
 const showFormHere = computed(() => ctx.replyTo.value?.id === props.comment.id)
+
+// 评论正文解析为 text/emoji token：小程序无 v-html，<text> 又不能嵌 <image>，
+// 故拆成有序段，由模板用 <text>/<image> 分段渲染（命中表情显示图片，未命中原样保留）。
+const contentTokens = computed(() => parseCommentContent(props.comment.content))
 </script>
 
 <template>
@@ -62,9 +67,20 @@ const showFormHere = computed(() => ctx.replyTo.value?.id === props.comment.id)
             回复
           </text>
         </view>
-        <text class="comment__content">
-          {{ comment.content }}
-        </text>
+        <view class="comment__content">
+          <block
+            v-for="(token, i) in contentTokens"
+            :key="i"
+          >
+            <text v-if="token.type === 'text'">{{ token.value }}</text>
+            <image
+              v-else
+              class="comment__emoji"
+              :src="token.url"
+              mode="aspectFit"
+            />
+          </block>
+        </view>
       </view>
     </view>
 
@@ -152,6 +168,15 @@ const showFormHere = computed(() => ctx.replyTo.value?.id === props.comment.id)
     color: var(--ink);
     word-break: break-word;
     white-space: pre-wrap;
+  }
+
+  // 行内表情：与文字同高混排，inline-block + vertical-align 贴中线
+  &__emoji {
+    display: inline-block;
+    width: 48rpx;
+    height: 48rpx;
+    margin: 0 2rpx;
+    vertical-align: middle;
   }
 
   &__action {
