@@ -398,7 +398,7 @@ const goArchive = () => {
 }
 
 .card__time {
-  margin-left: 4Frpx;
+  margin-left: 4rpx;
   font-size: 22rpx;
 }
 

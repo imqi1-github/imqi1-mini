@@ -47,21 +47,27 @@ function countComments(nodes: CommentNode[]): number {
 const commentTotal = computed(() => countComments(comments.value))
 
 // 评论独立加载：失败静默留空，不打断页面其余内容。
+// 请求序号守卫：cid 变化触发新加载时，丢弃过期响应（防旧 cid 数据覆盖新 cid 的评论树/表单设置）。
+let loadSeq = 0
 async function loadComments(id: number) {
   if (!id || id <= 0) return
+  const cur = ++loadSeq
   commentsLoading.value = true
   try {
     const result = await fetchContentComments(id)
+    if (cur !== loadSeq) return
     comments.value = result.data
     requireMail.value = result.requireMail
     requireLink.value = result.requireLink
     commentEnabled.value = result.commentEnabled
   }
   catch (e) {
+    if (cur !== loadSeq) return
     console.error(e)
     comments.value = []
   }
   finally {
+    if (cur !== loadSeq) return
     commentsLoading.value = false
   }
 }

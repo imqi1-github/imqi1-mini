@@ -39,7 +39,14 @@ function findMotionVideoStart(bytes: Uint8Array): number {
       && bytes[i + 6] === 0x79 // y
       && bytes[i + 7] === 0x70 // p
     ) {
-      return i
+      // 校验 box 的 size 字段（前 4 字节大端 u32）：必须 >= 8 且落在文件有效范围内。
+      // 否则是 JPEG 压缩数据里偶然出现 "ftyp" 的误命中——真 MP4 box 的 size 一定是合理值。
+      const size = (
+        ((bytes[i] ?? 0) << 24) | ((bytes[i + 1] ?? 0) << 16) | ((bytes[i + 2] ?? 0) << 8) | (bytes[i + 3] ?? 0)
+      ) >>> 0
+      if (size >= 8 && i + size <= bytes.length) {
+        return i
+      }
     }
   }
   return -1

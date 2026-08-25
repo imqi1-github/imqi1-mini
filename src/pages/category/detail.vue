@@ -66,9 +66,10 @@ async function loadMore() {
 }
 
 onLoad((query) => {
-  slug.value = query?.slug ? decodeURIComponent(query.slug) : ''
+  // onLoad 的 query 已被 uni 自动解码一次，调用方只 encode 一次，此处勿再 decode（否则含 % 的名字抛 URIError）
+  slug.value = query?.slug ?? ''
   if (query?.name) {
-    title.value = decodeURIComponent(query.name)
+    title.value = query.name
     uni.setNavigationBarTitle({ title: title.value })
   }
 

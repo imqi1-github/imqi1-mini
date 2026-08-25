@@ -12,6 +12,8 @@ export const siteOrigin = (() => {
 
 // 小程序 API 签名密钥，须与后端 MINI_API_SECRET 一致。
 // 留空则请求不带签名头（后端未配置密钥时也不校验，二者需同步开关）。
+// 注意：经 VITE_ 前缀在构建期烘焙进客户端包，可被反编译提取——
+// 它只是「防批量脚本」的轻门槛，不是认证边界；真正防线在后端限流+验证码（见 server/utils/mini-auth.ts）。
 export const miniApiSecret = import.meta.env.VITE_MINI_API_SECRET ?? ''
 
 // 代码块等宽字体：复用主站 Nerd Font 化的 JetBrains Mono（含终端图标 PUA 字形），

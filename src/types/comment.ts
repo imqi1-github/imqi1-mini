@@ -88,3 +88,13 @@ export interface CommentFormContext {
   /** 提交评论 */
   submit: () => void
 }
+
+/** 评论区接口的完整响应信封（/mini/comments 原始响应体，含表单必填项与评论开关） */
+export interface CommentsEnvelope {
+  success: boolean
+  message?: string
+  data: CommentNode[]
+  requireMail: boolean
+  requireLink: boolean
+  commentEnabled: boolean
+}

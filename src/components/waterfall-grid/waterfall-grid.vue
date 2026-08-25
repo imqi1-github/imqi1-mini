@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { WaterfallImage } from '@/types/markdown'
+import type { Column, ImageLoadEvent } from '@/types/waterfall-grid'
 import LivePhoto from '@/components/live-photo/live-photo.vue'
 import { isLivePhoto } from '@/utils/live-photo'
 
@@ -13,11 +14,6 @@ const props = defineProps<{
 
 // 每张图的宽高比（height / width），未测量时为默认 1
 const ratios = ref<Record<number, number>>({})
-
-// image 组件 load 事件：detail 携带图片原始宽高（uni 类型未精确导出，局部声明）
-interface ImageLoadEvent {
-  detail?: { width?: number, height?: number }
-}
 
 function setRatio(index: number, w?: number, h?: number) {
   if (w && h) {
@@ -33,11 +29,6 @@ function onImageLoad(index: number, e: ImageLoadEvent) {
 // 下标由组件 tag 原样带回（小程序端无法在模板内联箭头里引用循环变量）。
 function onLiveLoad(payload: { width: number, height: number, tag: number }) {
   setRatio(payload.tag, payload.width, payload.height)
-}
-
-interface Column {
-  items: { image: WaterfallImage, index: number }[]
-  height: number
 }
 
 // 按测得比例贪心分两列；比例缺省用 1，保证首帧也能均衡铺开

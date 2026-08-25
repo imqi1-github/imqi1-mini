@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+
 import { fetchMusic } from '@/api/music'
 import type { MiniMusic } from '@/types/music'
 
@@ -15,6 +16,7 @@ const songs = ref<MiniMusic[]>([])
 const currentIndex = ref(0)
 const loading = ref(true)
 const error = ref('')
+const songErr = ref('') // 单曲播放失败——仅提示，不覆盖播放器/列表，列表仍可重试/切歌
 
 const playing = ref(false)
 const duration = ref(0)
@@ -43,6 +45,7 @@ function setupAudio(src: string, autoPlay: boolean) {
   }
   current.value = 0
   duration.value = 0
+  songErr.value = ''
 
   audio = uni.createInnerAudioContext()
   audio.src = src
@@ -62,7 +65,7 @@ function setupAudio(src: string, autoPlay: boolean) {
     current.value = audio.currentTime
     duration.value = audio.duration
   })
-  audio.onError(() => { error.value = '音频播放失败' })
+  audio.onError(() => { playing.value = false; current.value = 0; songErr.value = '该歌曲播放失败，请重试或切换' })
 
   if (autoPlay) audio.play()
 }
@@ -86,9 +89,12 @@ function toggle() {
   else audio.play()
 }
 
+let disposed = false
+
 onMounted(() => {
   fetchMusic(props.server, props.mediaType, props.id)
     .then((res) => {
+      if (disposed) return
       const list = (res.list ?? []).filter(item => item && item.url)
       if (list.length === 0) {
         error.value = '未找到可播放的音乐'
@@ -100,14 +106,17 @@ onMounted(() => {
       setupAudio(list[0].url, false)
     })
     .catch((e: unknown) => {
+      if (disposed) return
       error.value = e instanceof Error ? e.message : '音乐加载失败'
     })
     .finally(() => {
+      if (disposed) return
       loading.value = false
     })
 })
 
 onBeforeUnmount(() => {
+  disposed = true
   if (audio) {
     audio.destroy()
     audio = null
@@ -144,6 +153,13 @@ onBeforeUnmount(() => {
             {{ song.artist }}
           </text>
         </view>
+
+        <text
+          v-if="songErr"
+          class="music__err"
+        >
+          {{ songErr }}
+        </text>
 
         <view class="music__ctrl">
           <view
@@ -266,6 +282,13 @@ onBeforeUnmount(() => {
   color: var(--muted);
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.music__err {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: var(--danger);
 }
 
 .music__ctrl {

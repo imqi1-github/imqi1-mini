@@ -108,6 +108,17 @@ function onEnded() {
   videoReady.value = false
 }
 
+// 视频解码/播放失败：收起播放态、释放坏源并退化为静态图预览，避免永久 spinner（与 web 端 @error 降级一致）
+function onVideoError() {
+  playing.value = false
+  videoReady.value = false
+  if (videoSrc.value) {
+    releaseLivePhotoVideo(videoSrc.value)
+    videoSrc.value = null
+  }
+  uni.showToast({ title: '视频解码失败，已切换到图片', icon: 'none' })
+}
+
 // 点击图片：预览大图（放大）。播放改由播放按钮触发，二者互不干扰。
 function onPreview() {
   if (playing.value) return
@@ -159,6 +170,7 @@ onBeforeUnmount(() => {
       :style="radius ? { borderRadius: radius } : undefined"
       @timeupdate="onTimeUpdate"
       @ended="onEnded"
+      @error="onVideoError"
     />
 
     <!-- 「实况」标识（未播放时显示） -->

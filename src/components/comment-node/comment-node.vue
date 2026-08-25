@@ -13,8 +13,6 @@ defineOptions({ name: 'CommentNode' })
 const props = defineProps<{
   /** 当前评论节点 */
   comment: CommentNode
-  /** 嵌套层级，0 为根评论；用于控制缩进，超过阈值后不再加深 */
-  depth?: number
 }>()
 
 // 表单共享上下文（页面 provide）：点「回复」把表单移动到本节点上方。
@@ -72,7 +70,9 @@ const contentTokens = computed(() => parseCommentContent(props.comment.content))
             v-for="(token, i) in contentTokens"
             :key="i"
           >
-            <text v-if="token.type === 'text'">{{ token.value }}</text>
+            <text v-if="token.type === 'text'">
+              {{ token.value }}
+            </text>
             <image
               v-else
               class="comment__emoji"
@@ -96,7 +96,6 @@ const contentTokens = computed(() => parseCommentContent(props.comment.content))
         v-for="child in comment.children"
         :key="child.id"
         :comment="child"
-        :depth="(depth ?? 0) + 1"
       />
     </view>
   </view>

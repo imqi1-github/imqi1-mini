@@ -286,6 +286,10 @@ function parseMusicParams(params: string): { server: string, mediaType: string, 
     id = parts[2]
   }
 
+  // 后端 /mini/music 仅支持 playlist/song（见 server/api/mini/music.get.ts validTypes）；
+  // album/artist 等类型会被后端 400 拒绝，直接丢弃该块以对齐两端契约。
+  if (mediaType !== 'playlist' && mediaType !== 'song') return null
+
   return id ? { server, mediaType, id } : null
 }
 
