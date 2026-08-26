@@ -37,6 +37,16 @@ page {
   color: var(--ink);
 }
 
+/* 宽屏/平板适配：给各页面根容器限宽居中。
+   用逻辑 px（非 rpx，避免 rpx 在宽屏随屏幕等比放大）做上限——只有当屏幕逻辑宽 >750px 时
+   max-width 才生效，手机（<750）保持全宽不受影响；宽屏时内容收敛到合理阅读宽并居中、两侧留白，
+   避免 rpx 放大后内容铺满整屏、行幅/列幅过宽。 */
+.page {
+  width: 100%;
+  max-width: 750px;
+  margin: 0 auto;
+}
+
 /* 暗色模式：跟随系统。仅覆盖设计 token，走 var() 的表面色自动适配。 */
 @media (prefers-color-scheme: dark) {
   page {

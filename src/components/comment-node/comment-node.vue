@@ -10,10 +10,14 @@ import { parseCommentContent } from '@/utils/emoji'
 // 是 Vue 内建的递归组件机制，不依赖 easycom autoscan（父页面则需显式 import 本组件）。
 defineOptions({ name: 'CommentNode' })
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   /** 当前评论节点 */
   comment: CommentNode
-}>()
+  /** 当前层级：顶层=0，每层递归 +1，用于限制缩进 */
+  depth?: number
+}>(), {
+  depth: 0,
+})
 
 // 表单共享上下文（页面 provide）：点「回复」把表单移动到本节点上方。
 const ctx = inject(commentFormKey)!
@@ -91,11 +95,13 @@ const contentTokens = computed(() => parseCommentContent(props.comment.content))
     <view
       v-if="comment.children.length"
       class="comment__children"
+      :class="{ 'comment__children--flat': depth > 0 }"
     >
       <comment-node
         v-for="child in comment.children"
         :key="child.id"
         :comment="child"
+        :depth="depth + 1"
       />
     </view>
   </view>
@@ -187,10 +193,15 @@ const contentTokens = computed(() => parseCommentContent(props.comment.content))
     }
   }
 
-  // 子评论区：左侧描边 + 缩进，形成层级感
+  // 子评论区：仅第一级回复缩进；二级及更深不再深缩（与一级回复左对齐），避免无限往右缩
   &__children {
     padding-left: 24rpx;
     margin-left: 8rpx;
+
+    &--flat {
+      padding-left: 0;
+      margin-left: 0;
+    }
   }
 }
 </style>

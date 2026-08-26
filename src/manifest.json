@@ -25,6 +25,7 @@
   "quickapp": {},
   "mp-weixin": {
     "appid": "",
+    "resizable": true,
     "setting": {
       "urlCheck": false,
       "es6": true,

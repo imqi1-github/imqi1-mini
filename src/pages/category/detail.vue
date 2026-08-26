@@ -65,11 +65,28 @@ async function loadMore() {
   }
 }
 
+// 安全解码 query 值：微信小程序 onLoad 的 options 不会自动 decode（uni-app 在 H5 端才自动），
+// 调用方 encode 一次后这里拿到的是编码串（%E5%B0%8F...），直接展示会显示成百分号。
+// 但个别 name 可能含字面 %（如 "100%"），decodeURIComponent 会抛 URIError，故 catch 回退原值。
+function decodeQuery(v?: string): string {
+  if (!v) return ''
+  // 微信小程序 onLoad 的 options 是否已解码在微信端不统一，调用方又仅 encode 一次；
+  // 故逐次解码直到无变化（最多3次），兼容「已解码」「仅编码一次」甚至「双重编码」。
+  // 含字面 %（如 "100%"）的名字 decodeURIComponent 会抛错，catch 时回退当前值。
+  let cur = v
+  for (let i = 0; i < 3; i++) {
+    let next: string
+    try { next = decodeURIComponent(cur) } catch { break }
+    if (next === cur) break
+    cur = next
+  }
+  return cur
+}
+
 onLoad((query) => {
-  // onLoad 的 query 已被 uni 自动解码一次，调用方只 encode 一次，此处勿再 decode（否则含 % 的名字抛 URIError）
-  slug.value = query?.slug ?? ''
+  slug.value = decodeQuery(query?.slug)
   if (query?.name) {
-    title.value = query.name
+    title.value = decodeQuery(query.name)
     uni.setNavigationBarTitle({ title: title.value })
   }
 

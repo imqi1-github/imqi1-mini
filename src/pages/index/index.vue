@@ -354,7 +354,8 @@ const goArchive = () => {
   position: relative;
   height: 200rpx;
   overflow: hidden;
-  background: var(--line);
+  /* 封面加载中/失败时以柔和蓝渐变兜底（与无封面 fallback 同风格但更淡），避免纯灰块突兀 */
+  background: linear-gradient(135deg, rgb(59 130 246 / 14%) 0%, rgb(37 99 235 / 24%) 100%);
   line-height: 0;
 }
 

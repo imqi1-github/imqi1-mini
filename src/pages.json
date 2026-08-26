@@ -5,6 +5,10 @@
       "^wd-(.*)": "wot-design-uni/components/wd-$1/wd-$1.vue"
     }
   },
+  "globalStyle": {
+    "rpxCalcMaxDeviceWidth": 750,
+    "rpxCalcBaseDeviceWidth": 375
+  },
   "pages": [
     {
       "path": "pages/index/index",

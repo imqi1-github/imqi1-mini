@@ -56,7 +56,6 @@ const { form, submitting, requireMail, requireLink, replyTo, cancelReply, submit
       :placeholder="replyTo ? `回复 @${replyTo.name}…` : '写下你的评论…'"
       placeholder-class="comment-form__ph"
       :maxlength="5000"
-      auto-height
     />
 
     <button
@@ -125,7 +124,7 @@ const { form, submitting, requireMail, requireLink, replyTo, cancelReply, submit
 .comment-form__textarea {
   box-sizing: border-box;
   width: 100%;
-  min-height: 140rpx;
+  height: 180rpx; /* 固定高度：微信 textarea 的 auto-height 在初始无内容时会把高度撑得畸形高、占位符竖排（闪烁），改固定高度避免 */
   padding: 20rpx;
   font-size: 28rpx;
   line-height: 1.6;
