@@ -11,6 +11,7 @@
 
 - Node.js >= 20
 - bun（与主项目一致）或 pnpm/npm 均可
+- Python >= 3.10（用于字体子集化脚本）
 - 微信开发者工具（用于运行 / 调试 `mp-weixin` 产物）
 
 ## 安装
@@ -48,6 +49,23 @@ bun run type-check   # vue-tsc 类型检查
 bun run lint         # ESLint（独立配置，不影响主项目）
 ```
 
+## 字体子集化
+
+remixicon 字体经过子集化处理，只包含项目实际用到的图标，大幅减少体积。
+
+```bash
+# 安装 Python 依赖
+pip install -r requirements.txt
+
+# 检查图标是否都存在
+python scripts/subset-font.py --check
+
+# 子集化字体
+python scripts/subset-font.py
+```
+
+新增图标时，把图标名加进 `scripts/subset-font.py` 的 `ICONS` 列表，然后重跑脚本即可。
+
 ## 目录结构
 
 ```
@@ -55,18 +73,21 @@ mini/
 ├── eslint.config.js        # 独立 ESLint flat config
 ├── index.html              # H5 入口
 ├── package.json
+├── requirements.txt        # Python 依赖（字体子集化）
 ├── tsconfig.json
 ├── uno.config.ts           # UnoCSS 配置（小程序适配）
 ├── vite.config.ts          # Vite + @dcloudio/vite-plugin-uni
+├── scripts/
+│   ├── subset-font.py      # 字体子集化脚本
+│   └── inject-rpxcalc.mjs  # 微信构建后注入 rpxCalc 参数
 └── src/
     ├── App.vue
     ├── env.d.ts
     ├── main.ts
     ├── manifest.json       # uni-app 应用配置（appid 等）
     ├── pages.json          # 路由 / easycom / 全局样式
-    ├── uni.scss
-    └── pages/
-        └── index/index.vue # 示例首页（wot-design-uni 按钮 + UnoCSS）
+    ├── static/icon/        # 图标字体（子集化后为 remixicon-subset.css）
+    └── uni.scss
 ```
 
 ## 配置要点
