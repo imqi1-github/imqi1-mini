@@ -16,6 +16,8 @@
   },
   "include": [
     "env.d.ts",
+    "*.ts",
+    "*.mts",
     "src/**/*.ts",
     "src/**/*.d.ts",
     "src/**/*.tsx",

@@ -37,7 +37,7 @@ export default defineConfig({
         // legacy 形参 { deprecation: true }，modern 形参 { deprecation: '<id>' }。
         logger: {
           warn(message, options) {
-            if (options && (options.deprecation || options.deprecationType))
+            if (options && ('deprecation' in options ? options.deprecation : false))
               return
             console.warn(message)
           },
