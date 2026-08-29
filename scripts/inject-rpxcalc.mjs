@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const appJson = join(__dirname, 'dist', 'build', 'mp-weixin', 'app.json');
+const appJson = join(__dirname, '..', 'dist', 'build', 'mp-weixin', 'app.json');
 
 if (!existsSync(appJson)) {
   console.warn('[inject-rpxcalc] 未找到产物 app.json，跳过:', appJson);
