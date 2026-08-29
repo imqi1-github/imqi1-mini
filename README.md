@@ -55,7 +55,7 @@ remixicon 字体经过子集化处理，只包含项目实际用到的图标，�
 
 ```bash
 # 安装 Python 依赖
-pip install -r requirements.txt
+pip install -r scripts/requirements.txt
 
 # 检查图标是否都存在
 python scripts/subset-font.py --check
@@ -73,11 +73,11 @@ mini/
 ├── eslint.config.js        # 独立 ESLint flat config
 ├── index.html              # H5 入口
 ├── package.json
-├── requirements.txt        # Python 依赖（字体子集化）
 ├── tsconfig.json
 ├── uno.config.ts           # UnoCSS 配置（小程序适配）
 ├── vite.config.ts          # Vite + @dcloudio/vite-plugin-uni
 ├── scripts/
+│   ├── requirements.txt    # Python 依赖
 │   ├── subset-font.py      # 字体子集化脚本
 │   └── inject-rpxcalc.mjs  # 微信构建后注入 rpxCalc 参数
 └── src/
