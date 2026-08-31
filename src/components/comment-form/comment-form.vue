@@ -1,11 +1,24 @@
 <script setup lang="ts">
-import { inject } from 'vue'
+import { computed, inject, onMounted, ref } from 'vue'
 import { commentFormKey } from '@/components/comment-node/context'
 
 // 评论输入表单：所有状态来自页面 provide 的共享上下文，
 // 因此本组件在「评论区顶端」与「被回复评论上方」之间移动时不会丢失已输入内容。
 const ctx = inject(commentFormKey)!
 const { form, submitting, requireMail, requireLink, replyTo, cancelReply, submit } = ctx
+
+// 原生 <textarea> 是微信原生组件：与父级在同一帧插入时，WebView 还没提交最终布局几何，
+// 原生层会先按「默认尺寸 + 未定稿宽度」首帧渲染——表现为输入框被拉高、占位符逐字换行（竖排），
+// 下一帧布局生效才跳回正常。固定 height 只收敛了稳定态高度，挡不住首帧本身。
+// 故把 textarea 延后到本组件挂载后的下一个宏任务再创建（此时父级已排好版），
+// 挂载前用同尺寸占位 view 顶住布局，避免「空一瞬再弹入」的跳变感。
+const textareaReady = ref(false)
+onMounted(() => {
+  setTimeout(() => { textareaReady.value = true }, 0)
+})
+
+// 占位文案：普通态/回复态跟随 replyTo，与 textarea 的 :placeholder 保持一致。
+const placeholderText = computed(() => replyTo.value ? `回复 @${replyTo.value.name}…` : '写下你的评论…')
 </script>
 
 <template>
@@ -50,10 +63,30 @@ const { form, submitting, requireMail, requireLink, replyTo, cancelReply, submit
       type="text"
     >
 
+    <!-- 原生 <textarea> 延迟挂载：就绪前用同尺寸占位 view 顶住布局，
+         消掉原生组件在 WebView 提交布局前首帧「拉高 + 占位符竖排」的闪现 -->
+    <view
+      v-if="!textareaReady"
+      class="comment-form__textarea comment-form__textarea--ph"
+    >
+      <text
+        v-if="form.content"
+        class="comment-form__text"
+      >
+        {{ form.content }}
+      </text>
+      <text
+        v-else
+        class="comment-form__ph"
+      >
+        {{ placeholderText }}
+      </text>
+    </view>
     <textarea
+      v-else
       v-model="form.content"
       class="comment-form__textarea"
-      :placeholder="replyTo ? `回复 @${replyTo.name}…` : '写下你的评论…'"
+      :placeholder="placeholderText"
       placeholder-class="comment-form__ph"
       :maxlength="5000"
     />
@@ -132,6 +165,17 @@ const { form, submitting, requireMail, requireLink, replyTo, cancelReply, submit
   background: var(--bg);
   border: 1rpx solid var(--line);
   border-radius: 10rpx;
+}
+
+/* 占位 view：复用 .comment-form__textarea 的尺寸/边框/底色，只在原生 textarea 未就绪的一瞬顶位 */
+.comment-form__textarea--ph {
+  overflow: hidden;
+}
+
+.comment-form__text {
+  color: var(--ink);
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .comment-form__ph {
