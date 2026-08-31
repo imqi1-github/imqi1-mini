@@ -78,9 +78,7 @@ const placeholderText = computed(() => replyTo.value ? `回复 @${replyTo.value.
       <text
         v-else
         class="comment-form__ph"
-      >
-        {{ placeholderText }}
-      </text>
+      />
     </view>
     <textarea
       v-else
