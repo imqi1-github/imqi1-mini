@@ -51,7 +51,9 @@ async function load(id: number) {
 }
 
 onLoad((query) => {
-  const id = Number(query?.id)
+  // 兼容两种入口：页面内跳转传 id；微信小程序码经 scene 传 cid（微信解码后给到 query.scene）
+  const raw = query?.id ?? query?.scene ?? ''
+  const id = Number(raw)
   if (!id || !Number.isInteger(id) || id <= 0) {
     loading.value = false
     error.value = '文章不存在'
