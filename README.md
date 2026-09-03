@@ -93,5 +93,17 @@ mini/
 ## 配置要点
 
 - **easycom**：`pages.json` 已配置 `^wd-(.*)` 自动按需引入 wot-design-uni 组件，模板中直接使用 `<wd-button />` 等即可，无需手动 import。
-- **appid**：`src/manifest.json` 中 `mp-weixin.appid` 为空，开发前请填入真实 AppID。
+- **appid**：`src/manifest.json` 的 `mp-weixin.appid` 已填示例值（`wxd45784d62bb73db8`），**开源/他人使用请替换为你自己的 AppID**（留空则每次构建后需在微信开发者工具重填）。
 - **接口地址**：与主项目后端联调时，请在 `src/` 下封装请求并指向后端服务地址（H5 跨域与小程序合法域名需分别配置）。
+
+## 注意事项
+
+### 资源
+- **表情**：`src/` 下的 `emojis.json` 与 `EMOJI_CATEGORIES` 需**手动同步**（`capoo` 图是 gif 且扩展名不统一，务必查表、不能从 key 推导 path）。
+- **`/emojis` 图片路径**：需用 `siteConfig.siteUrl` 补全为绝对地址。
+- **行内表情**：小程序 `text` 不能嵌 `image`，表情按 `parseCommentContent` 切成 text/emoji 分段渲染。
+- **实况照片（LivePhoto / Motion Photo）**：拉整包扫 `ftyp` 切 MP4，用 `<video>` 覆盖静态图点击播放；H5 用 blob、小程序用 `wx.writeFile` 临时文件。
+- **页面标题**：列表/聚合页 `.title-bar` 左右 padding 统一 `24rpx`，勿写 `40rpx`（卡片式头部自成体系除外）。
+
+### 工作流
+- **子模块**：本目录是主项目（`imqi1-cms`）的 **gitee 子模块**。改动后先在 `mini/` 内 `git add && commit && push`，再回主库 `git add mini` 提升子模块指针。校验用根脚本 `bun run mini:lint` / `mini:type-check`；`dist/` 已 gitignore。
