@@ -9,9 +9,9 @@
 
 ## 环境要求
 
-- Node.js >= 20
+- Node.js >= 22
 - bun（与主项目一致）或 pnpm/npm 均可
-- Python >= 3.10（用于字体子集化脚本）
+- Python >= 3.12（用于字体子集化脚本）
 - 微信开发者工具（用于运行 / 调试 `mp-weixin` 产物）
 
 ## 安装
@@ -106,4 +106,4 @@ mini/
 - **页面标题**：列表/聚合页 `.title-bar` 左右 padding 统一 `24rpx`，勿写 `40rpx`（卡片式头部自成体系除外）。
 
 ### 工作流
-- **子模块**：本目录是主项目（`imqi1-cms`）的 **gitee 子模块**。改动后先在 `mini/` 内 `git add && commit && push`，再回主库 `git add mini` 提升子模块指针。校验用根脚本 `bun run mini:lint` / `mini:type-check`；`dist/` 已 gitignore。
+- **子模块**：本目录是主项目（`imqi1-cms`）的 **子模块**。改动后先在 `mini/` 内 `git add && commit && push`，再回主库 `git add mini` 提升子模块指针。校验用根脚本 `bun run mini:lint` / `mini:type-check`；`dist/` 已 gitignore。
