@@ -8,7 +8,7 @@ import type { CategoryItem } from '@/types/category'
 const categories = ref<CategoryItem[]>([])
 const loading = ref(true)
 const categoryCount = computed(() => categories.value.length)
-// 小程序评论总开关（features.miniComment）：关闭时隐藏「留言」入口。
+// 评论总开关（跟随主站后台的「开启评论」）：关闭时隐藏「留言」入口。
 // 初始 false，避免进页面先显示留言入口、请求返回关闭后再移除造成闪烁；
 // 确认允许后才展示，拉取失败保持 false（宁可不显示，也不闪现）。
 const commentEnabled = ref(false)

@@ -18,7 +18,7 @@ const props = withDefaults(defineProps<{
 
 const comments = ref<CommentNode[]>([])
 const commentsLoading = ref(false)
-// 评论总开关（features.miniComment）：false 时整个评论区（含输入框）不渲染。
+// 评论总开关（跟随主站后台的「开启评论」）：false 时整个评论区（含输入框）不渲染。
 // 初始 false，避免进页面先渲染输入框、请求返回关闭后再撤掉造成布局偏移/闪现；
 // 确认允许评论后才展示。拉取失败保持 false（宁可不显示，也不闪现）。
 const commentEnabled = ref(false)
