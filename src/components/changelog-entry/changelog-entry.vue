@@ -63,6 +63,14 @@ const ChangelogEntry: Component = defineComponent({
 export default ChangelogEntry
 </script>
 
+<!-- 小程序要求每个 usingComponents 组件目录下有 .wxml，否则加载报错。
+     本组件用 render function 渲染（小程序 <text> 不能嵌自定义组件），运行时忽略
+     template；放一个空 view 仅为让 uni-app 输出 .wxml / .json / .wxss 文件。
+     template 中不得引用任何组件，否则 uni-app 会把它们记入 usingComponents。 -->
+<template>
+  <view />
+</template>
+
 <style lang="scss" scoped>
 /* ===== 文本块 ===== */
 .entry-text:not(:last-child) {
