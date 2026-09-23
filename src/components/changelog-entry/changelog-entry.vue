@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { siteConfig } from '@/site.config'
+import InlineSpan from '@/components/inline-span/inline-span.vue'
 import type { EntryBlock } from '@/types/changelog'
 
 // 递归渲染更新日志变更内容的块级节点（文本 / 列表，列表可嵌套）。
@@ -37,15 +38,10 @@ function openLink(href: string) {
       v-if="block.type === 'text'"
       class="entry-text"
     >
-      <text
-        v-for="(span, si) in block.spans"
-        :key="si"
-        class="md-inline"
-        :class="`md-inline--${span.type}`"
-        @tap="span.type === 'link' && span.href ? openLink(span.href) : undefined"
-      >
-        {{ span.text }}
-      </text>
+      <inline-span
+        :spans="block.spans"
+        @open-link="openLink"
+      />
     </view>
 
     <!-- 列表 -->
@@ -63,15 +59,10 @@ function openLink(href: string) {
         </text>
         <view class="entry-list__body">
           <view class="entry-list__line">
-            <text
-              v-for="(span, si) in item.spans"
-              :key="si"
-              class="md-inline"
-              :class="`md-inline--${span.type}`"
-              @tap="span.type === 'link' && span.href ? openLink(span.href) : undefined"
-            >
-              {{ span.text }}
-            </text>
+            <inline-span
+              :spans="item.spans"
+              @open-link="openLink"
+            />
           </view>
           <!-- 嵌套子块（子列表 / 文本），递归渲染 -->
           <changelog-entry
@@ -85,41 +76,6 @@ function openLink(href: string) {
 </template>
 
 <style lang="scss" scoped>
-/* ===== 行内 Markdown 片段 ===== */
-.md-inline {
-  font-size: 27rpx;
-  line-height: 1.6;
-  color: var(--ink);
-  word-break: break-word;
-}
-
-.md-inline--strong {
-  font-weight: 700;
-}
-
-.md-inline--em {
-  font-style: italic;
-}
-
-.md-inline--strike {
-  text-decoration: line-through;
-}
-
-.md-inline--code {
-  padding: 2rpx 10rpx;
-  margin: 0 4rpx;
-  font-family: var(--code-font-family);
-  font-size: 24rpx;
-  color: var(--brand-2);
-  background: var(--line);
-  border-radius: 8rpx;
-}
-
-.md-inline--link {
-  color: var(--brand);
-  text-decoration: underline;
-}
-
 /* ===== 文本块 ===== */
 .entry-text:not(:last-child) {
   margin-bottom: 10rpx;
@@ -138,7 +94,7 @@ function openLink(href: string) {
 .entry-list__marker {
   flex-shrink: 0;
   min-width: 28rpx;
-  margin-right: 12rpx;
+  margin-right: 28rpx;
   font-size: 27rpx;
   line-height: 1.6;
   color: var(--brand);

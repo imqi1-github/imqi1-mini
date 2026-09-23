@@ -1,13 +1,19 @@
 // 极简 Markdown 解析结果类型：块级节点 + 行内片段
 // 仅覆盖最基础语法，供小程序用原生 view/text 渲染
+//
+// 行内片段语义：
+// - text / code 没有嵌套概念，存 text
+// - strong / em / strike / link 是容器，内部继续解析为 InlineSpan[]
+//   （让删除线内嵌链接、链接内嵌粗体这类语法与主站 markdown-it 对齐）
 
-/** 行内片段：普通文本 / 粗体 / 斜体 / 删除线 / 行内代码 / 链接 */
-export interface InlineSpan {
-  type: 'text' | 'strong' | 'em' | 'strike' | 'code' | 'link'
-  text: string
-  /** 仅 link 有值 */
-  href?: string
-}
+/** 行内片段：text/code 用 text 字段；strong/em/strike/link 用 children 字段递归 */
+export type InlineSpan =
+  | { type: 'text'; text: string }
+  | { type: 'code'; text: string }
+  | { type: 'strong'; children: InlineSpan[] }
+  | { type: 'em'; children: InlineSpan[] }
+  | { type: 'strike'; children: InlineSpan[] }
+  | { type: 'link'; children: InlineSpan[]; href: string }
 
 /** 标题块 */
 export interface HeadingBlock {

@@ -108,33 +108,101 @@ function matchImage(line: string, refs: Map<string, string>): ImageBlock | null 
   return null
 }
 
-/** 解析行内片段：粗体、斜体、删除线、行内码、链接，其余为纯文本 */
+// GFM 自动链接：尖括号包裹的 URL（与邮箱互斥，邮箱单独走 EMAIL_RE）。
+// 只接受 https?://、mailto: 三种协议；不允许空分支（否则 <user@x.com> 也会命中）。
+const AUTOLINK_RE = /<((?:https?:\/\/|mailto:)[^>\s]+)>/
+// 邮件地址检测：尖括号 + 普通邮箱格式。捕获组 [1] 是地址原文（不含 mailto: 前缀）。
+const EMAIL_RE = /<([\w.+-]+@[\w-]+(?:\.[\w-]+)+)>/
+
+/** 解析行内片段：粗体、斜体、删除线、行内码、链接、自动链接，其余为纯文本。
+ *
+ * 容器型片段（strong / em / strike / link）的内部递归调用本函数解析，使删除线内嵌链接、
+ * 链接内嵌粗体这类语法与主站 markdown-it 对齐。
+ *
+ * 匹配策略：每轮在当前 rest 中扫所有 pattern，找最早匹配；前导部分作为 text 切走。
+ * - 这样保留「hello **world** foo」中 world 的 bold 解析（前导 text + bold + text + bold 顺序）
+ * - 自动链接允许出现在 rest 中间位置（前面 text 由主循环切走）
+ */
 export function parseInline(input: string): InlineSpan[] {
   const spans: InlineSpan[] = []
   let rest = input
 
-  // 依次尝试匹配最靠前的一个标记，切出前缀文本，再处理标记本身
-  const patterns: { type: InlineSpan['type'], re: RegExp }[] = [
-    { type: 'code', re: /`([^`]+)`/ },
-    { type: 'strong', re: /\*\*([^*]+)\*\*/ },
-    { type: 'em', re: /\*([^*]+)\*/ },
-    { type: 'strike', re: /~~([^~\n]+)~~/ },
-    { type: 'link', re: /\[([^\]]+)\]\(([^)]+)\)/ },
+  // 容器型片段：捕获组 [1] 是内部文本（链接 [1] 文本 + [2] href）；解析时再对其递归。
+  const containerPatterns: Array<{
+    type: 'strong' | 'em' | 'strike' | 'link'
+    re: RegExp
+    build: (m: RegExpExecArray) => InlineSpan
+  }> = [
+    {
+      type: 'strong',
+      re: /\*\*([^*]+)\*\*/,
+      build: m => ({ type: 'strong', children: parseInline(m[1]) }),
+    },
+    {
+      type: 'em',
+      re: /\*([^*]+)\*/,
+      build: m => ({ type: 'em', children: parseInline(m[1]) }),
+    },
+    {
+      type: 'strike',
+      re: /~~([^~\n]+)~~/,
+      build: m => ({ type: 'strike', children: parseInline(m[1]) }),
+    },
+    {
+      type: 'link',
+      re: /\[([^\]]+)\]\(([^)]+)\)/,
+      build: m => ({ type: 'link', children: parseInline(m[1]), href: m[2] }),
+    },
+  ]
+
+  // 叶子型片段：内部不再解析；扫整个 rest 找最早位置。
+  const leafPatterns: Array<{
+    type: 'code' | 'link'
+    re: RegExp
+    build: (m: RegExpExecArray) => InlineSpan
+  }> = [
+    {
+      type: 'code',
+      re: /`([^`]+)`/,
+      build: m => ({ type: 'code', text: m[1] }),
+    },
+    {
+      type: 'link',
+      re: AUTOLINK_RE,
+      build: m => ({
+        type: 'link',
+        children: [{ type: 'text', text: m[1] }],
+        href: m[1],
+      }),
+    },
+    {
+      type: 'link',
+      re: EMAIL_RE,
+      build: m => ({
+        type: 'link',
+        children: [{ type: 'text', text: m[1] }],
+        href: `mailto:${m[1]}`,
+      }),
+    },
   ]
 
   while (rest.length > 0) {
     let best: { index: number, len: number, span: InlineSpan } | null = null
 
-    for (const { type, re } of patterns) {
+    // 容器型（任意位置找最早）
+    for (const { re, build } of containerPatterns) {
       const m = re.exec(rest)
       if (!m) continue
       if (best && m.index >= best.index) continue
+      best = { index: m.index, len: m[0].length, span: build(m) }
+    }
 
-      const span: InlineSpan = type === 'link'
-        ? { type, text: m[1], href: m[2] }
-        : { type, text: m[1] }
-
-      best = { index: m.index, len: m[0].length, span }
+    // 叶子型（任意位置找最早；与容器型比 index）
+    for (const { re, build } of leafPatterns) {
+      const m = re.exec(rest)
+      if (!m) continue
+      if (best && m.index >= best.index) continue
+      best = { index: m.index, len: m[0].length, span: build(m) }
     }
 
     if (!best) {
@@ -142,6 +210,7 @@ export function parseInline(input: string): InlineSpan[] {
       break
     }
 
+    // 前导 text
     if (best.index > 0) {
       spans.push({ type: 'text', text: rest.slice(0, best.index) })
     }

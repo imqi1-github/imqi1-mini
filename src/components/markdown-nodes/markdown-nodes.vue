@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { siteConfig } from '@/site.config'
+import InlineSpan from '@/components/inline-span/inline-span.vue'
 import WaterfallGrid from '@/components/waterfall-grid/waterfall-grid.vue'
 import MusicPlayer from '@/components/music-player/music-player.vue'
 import RepoCard from '@/components/repo-card/repo-card.vue'
@@ -84,15 +85,10 @@ function previewImages(urls: string[], current: string) {
       class="md-heading"
       :class="`md-heading--h${block.level}`"
     >
-      <text
-        v-for="(span, si) in block.spans"
-        :key="si"
-        class="md-inline"
-        :class="`md-inline--${span.type}`"
-        @tap="span.type === 'link' && span.href ? openLink(span.href) : undefined"
-      >
-        {{ span.text }}
-      </text>
+      <inline-span
+        :spans="block.spans"
+        @open-link="openLink"
+      />
     </view>
 
     <!-- 段落 -->
@@ -100,15 +96,10 @@ function previewImages(urls: string[], current: string) {
       v-else-if="block.type === 'paragraph'"
       class="md-paragraph"
     >
-      <text
-        v-for="(span, si) in block.spans"
-        :key="si"
-        class="md-inline"
-        :class="`md-inline--${span.type}`"
-        @tap="span.type === 'link' && span.href ? openLink(span.href) : undefined"
-      >
-        {{ span.text }}
-      </text>
+      <inline-span
+        :spans="block.spans"
+        @open-link="openLink"
+      />
     </view>
 
     <!-- 引用 -->
@@ -116,15 +107,10 @@ function previewImages(urls: string[], current: string) {
       v-else-if="block.type === 'quote'"
       class="md-quote"
     >
-      <text
-        v-for="(span, si) in block.spans"
-        :key="si"
-        class="md-inline"
-        :class="`md-inline--${span.type}`"
-        @tap="span.type === 'link' && span.href ? openLink(span.href) : undefined"
-      >
-        {{ span.text }}
-      </text>
+      <inline-span
+        :spans="block.spans"
+        @open-link="openLink"
+      />
     </view>
 
     <!-- 列表 -->
@@ -141,15 +127,10 @@ function previewImages(urls: string[], current: string) {
           {{ block.ordered ? `${ii + 1}.` : '•' }}
         </text>
         <view class="md-list__body">
-          <text
-            v-for="(span, si) in item"
-            :key="si"
-            class="md-inline"
-            :class="`md-inline--${span.type}`"
-            @tap="span.type === 'link' && span.href ? openLink(span.href) : undefined"
-          >
-            {{ span.text }}
-          </text>
+          <inline-span
+            :spans="item"
+            @open-link="openLink"
+          />
         </view>
       </view>
     </view>
@@ -241,15 +222,10 @@ function previewImages(urls: string[], current: string) {
             class="md-table__cell md-table__cell--head"
             :class="`md-table__cell--${block.aligns[ci] || 'left'}`"
           >
-            <text
-              v-for="(span, si) in cell"
-              :key="si"
-              class="md-inline"
-              :class="`md-inline--${span.type}`"
-              @tap="span.type === 'link' && span.href ? openLink(span.href) : undefined"
-            >
-              {{ span.text }}
-            </text>
+            <inline-span
+              :spans="cell"
+              @open-link="openLink"
+            />
           </view>
         </view>
 
@@ -265,15 +241,10 @@ function previewImages(urls: string[], current: string) {
             class="md-table__cell"
             :class="`md-table__cell--${block.aligns[ci] || 'left'}`"
           >
-            <text
-              v-for="(span, si) in cell"
-              :key="si"
-              class="md-inline"
-              :class="`md-inline--${span.type}`"
-              @tap="span.type === 'link' && span.href ? openLink(span.href) : undefined"
-            >
-              {{ span.text }}
-            </text>
+            <inline-span
+              :spans="cell"
+              @open-link="openLink"
+            />
           </view>
         </view>
       </view>
