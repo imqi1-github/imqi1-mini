@@ -120,6 +120,12 @@ function openLink(href: string) {
   text-decoration: underline;
 }
 
+/* 删除线内嵌链接：两个类命中同一 text，text-decoration 单值属性会被
+   后定义的 .md-inline--link 覆盖，需显式写叠加值（CSS3 多值简写） */
+.md-inline--strike.md-inline--link {
+  text-decoration: line-through underline;
+}
+
 /* ===== 文本块 ===== */
 .entry-text:not(:last-child) {
   margin-bottom: 10rpx;
