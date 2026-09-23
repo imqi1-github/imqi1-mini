@@ -1,7 +1,7 @@
-<script setup lang="ts">
-import { ref, watch } from 'vue'
+<script lang="ts">
+import { computed, defineComponent, h, ref, watch, type Component } from 'vue'
 import { siteConfig } from '@/site.config'
-import InlineSpan from '@/components/inline-span/inline-span.vue'
+import { buildInlineSpans } from '@/utils/inline-span'
 import WaterfallGrid from '@/components/waterfall-grid/waterfall-grid.vue'
 import MusicPlayer from '@/components/music-player/music-player.vue'
 import RepoCard from '@/components/repo-card/repo-card.vue'
@@ -10,420 +10,330 @@ import type { CalloutType, MarkdownBlock } from '@/types/markdown'
 import { isLivePhoto } from '@/utils/live-photo'
 import { ensureCodeFont } from '@/utils/code-font'
 
-// 递归渲染 Markdown 块级节点。折叠面板（details）的内容再引用 <markdown-nodes>
-// 渲染 children，自引用靠下方 defineOptions 的 name 解析（Vue 内建递归组件机制，
-// 父页面需显式 import 本组件）。小程序无法用 v-html，故全部用原生 view/text 渲染。
-defineOptions({ name: 'MarkdownNodes' })
-
-const props = defineProps<{
-  /** 待渲染的块级节点数组 */
-  blocks: MarkdownBlock[]
-}>()
-
-// 含代码块时按需加载 Nerd Font 图标字体（否则终端图标显示为豆腐块）。
-// ensureCodeFont 幂等，嵌套容器里的代码块在各自层级触发也只会加载一次。
-watch(
-  () => props.blocks,
-  (blocks) => {
-    if (blocks.some(b => b.type === 'code')) {
-      ensureCodeFont()
-    }
+// 关键约束：小程序原生 <text> 不能包含 <block> 或自定义组件，所以容器型 span
+// 的 children 用 utils/inline-span.ts 的 buildInlineSpans 拍平成同级 <text>，
+// 整段模板改用 render function 而非模板，避免引用 inline-span 组件节点。
+//
+// 自引用：递归调用自身组件（MarkdownNodes）渲染 details/callout 的 children。
+// 显式标注返回类型为 Component，避免 TS 自引用 implicit any 报错。
+const MarkdownNodes: Component = defineComponent({
+  name: 'MarkdownNodes',
+  props: {
+    blocks: {
+      type: Array,
+      required: true,
+    },
   },
-  { immediate: true },
-)
+  setup(props) {
+    // 含代码块时按需加载 Nerd Font 图标字体（否则终端图标显示为豆腐块）。
+    // ensureCodeFont 幂等，嵌套容器里的代码块在各自层级触发也只会加载一次。
+    const blocksRef = computed(() => props.blocks as MarkdownBlock[])
+    watch(blocksRef, (blocks) => {
+      if (blocks.some(b => b.type === 'code')) {
+        ensureCodeFont()
+      }
+    }, { immediate: true })
 
-// 提示框图标（小程序无 svg，用 emoji 表意，配色见 style）
-const CALLOUT_ICON: Record<CalloutType, string> = {
-  success: '✓',
-  warning: '⚠',
-  error: '✕',
-  info: 'ℹ',
-}
+    // 提示框图标（小程序无 svg，用 emoji 表意，配色见 style）
+    const CALLOUT_ICON: Record<CalloutType, string> = {
+      success: '✓',
+      warning: '⚠',
+      error: '✕',
+      info: 'ℹ',
+    }
 
-// 每个折叠面板的展开状态，用下标标记；默认折叠
-const openMap = ref<Record<number, boolean>>({})
+    // 每个折叠面板的展开状态，用下标标记；默认折叠
+    const openMap = ref<Record<number, boolean>>({})
+    function toggleDetails(index: number) {
+      openMap.value = { ...openMap.value, [index]: !openMap.value[index] }
+    }
 
-function toggleDetails(index: number) {
-  openMap.value = { ...openMap.value, [index]: !openMap.value[index] }
-}
+    // 以 / 开头的根相对链接（如 /contents/1）不含域名，直接复制不可用；
+    // 用配置的网页版站点地址补全为完整地址。
+    function resolveHref(href: string): string {
+      if (href.startsWith('/') && !href.startsWith('//') && siteConfig.siteUrl) {
+        return siteConfig.siteUrl + href
+      }
+      return href
+    }
 
-// 以 / 开头的根相对链接（如 /contents/1）不含域名，直接复制不可用；
-// 用配置的网页版站点地址补全为完整地址。// 双斜杠 // 开头（协议相对）与含协议的绝对地址原样返回。
-function resolveHref(href: string) {
-  if (href.startsWith('/') && !href.startsWith('//') && siteConfig.siteUrl) {
-    return siteConfig.siteUrl + href
-  }
-  return href
-}
+    function openLink(href: string) {
+      uni.setClipboardData({
+        data: resolveHref(href),
+        success: () => uni.showToast({ title: '链接已复制', icon: 'none' }),
+      })
+    }
 
-function openLink(href: string) {
-  uni.setClipboardData({
-    data: resolveHref(href),
-    success: () => uni.showToast({ title: '链接已复制', icon: 'none' }),
-  })
-}
+    function previewImage(src: string) {
+      uni.previewImage({ urls: [src], current: src })
+    }
 
-function previewImage(src: string) {
-  uni.previewImage({ urls: [src], current: src })
-}
+    function previewImages(urls: string[], current: string) {
+      if (!urls.length) return
+      uni.previewImage({ urls, current })
+    }
 
-// 轮播图预览：传入全部图片与当前点击项
-function previewImages(urls: string[], current: string) {
-  if (!urls.length) return
-  uni.previewImage({ urls, current })
-}
+    // 把 spans 渲染为 VNode 数组（来自 utils/inline-span.ts，避免 inline-span 组件节点）
+    const inlineSpans = (spans: Parameters<typeof buildInlineSpans>[0]) =>
+      buildInlineSpans(spans, openLink)
+
+    // 构造单块的 VNode 树
+    function renderBlock(block: MarkdownBlock, bi: number) {
+      switch (block.type) {
+        case 'heading':
+          return h('view', {
+            class: ['md-heading', `md-heading--h${block.level}`],
+            key: `b-${bi}`,
+          }, inlineSpans(block.spans))
+
+        case 'paragraph':
+          return h('view', {
+            class: 'md-paragraph',
+            key: `b-${bi}`,
+          }, inlineSpans(block.spans))
+
+        case 'quote':
+          return h('view', {
+            class: 'md-quote',
+            key: `b-${bi}`,
+          }, inlineSpans(block.spans))
+
+        case 'list':
+          return h('view', {
+            class: 'md-list',
+            key: `b-${bi}`,
+          }, block.items.map((item, ii) =>
+            h('view', {
+              class: 'md-list__item',
+              key: `b-${bi}-i-${ii}`,
+            }, [
+              h('text', { class: 'md-list__marker' }, block.ordered ? `${ii + 1}.` : '•'),
+              h('view', { class: 'md-list__body' }, inlineSpans(item)),
+            ]),
+          ))
+
+        case 'code':
+          return h('view', {
+            class: 'md-code',
+            key: `b-${bi}`,
+          }, [
+            (block.lang || block.fileName)
+              ? h('view', { class: 'md-code__bar' }, [
+                  block.lang ? h('text', { class: 'md-code__lang' }, block.lang) : null,
+                  block.fileName ? h('text', { class: 'md-code__file' }, block.fileName) : null,
+                ])
+              : null,
+            h('scroll-view', {
+              class: 'md-code__scroll',
+              'scroll-x': true,
+            }, h('view', { class: 'md-code__body' },
+              block.lines.map((codeLine, li) =>
+                h('view', {
+                  class: 'md-code__line',
+                  key: `b-${bi}-l-${li}`,
+                }, codeLine.length === 0
+                  ? [h('text', null, ' ')]
+                  : codeLine.map((token, ti) =>
+                      h('text', {
+                        class: ['md-code__token', `tok--${token.type}`],
+                        key: `b-${bi}-l-${li}-t-${ti}`,
+                      }, token.text),
+                    ),
+                ),
+              ),
+            )),
+          ])
+
+        case 'image':
+          return block.isLive
+            ? h(LivePhoto, {
+                class: 'md-image',
+                src: block.src,
+                alt: block.alt,
+                mode: 'widthFix',
+                radius: '12rpx',
+                key: `b-${bi}`,
+              })
+            : h('image', {
+                class: 'md-image',
+                src: block.src,
+                mode: 'widthFix',
+                onTap: () => previewImage(block.src),
+                key: `b-${bi}`,
+              })
+
+        case 'divider':
+          return h('view', { class: 'md-divider', key: `b-${bi}` })
+
+        case 'table':
+          return h('scroll-view', {
+            class: 'md-table-scroll',
+            'scroll-x': true,
+            key: `b-${bi}`,
+          }, h('view', { class: 'md-table' }, [
+            h('view', { class: 'md-table__row md-table__row--head' },
+              block.header.map((cell, ci) =>
+                h('view', {
+                  class: ['md-table__cell', 'md-table__cell--head', `md-table__cell--${block.aligns[ci] || 'left'}`],
+                  key: `b-${bi}-h-${ci}`,
+                }, inlineSpans(cell)),
+              ),
+            ),
+            block.rows.map((row, ri) =>
+              h('view', {
+                class: 'md-table__row',
+                key: `b-${bi}-r-${ri}`,
+              }, row.map((cell, ci) =>
+                h('view', {
+                  class: ['md-table__cell', `md-table__cell--${block.aligns[ci] || 'left'}`],
+                  key: `b-${bi}-r-${ri}-c-${ci}`,
+                }, inlineSpans(cell)),
+              )),
+            ),
+          ]))
+
+        case 'details':
+          return h('view', {
+            class: 'md-details',
+            key: `b-${bi}`,
+          }, [
+            h('view', {
+              class: 'md-details__summary',
+              onTap: () => toggleDetails(bi),
+            }, [
+              h('text', {
+                class: ['md-details__arrow', openMap.value[bi] && 'md-details__arrow--open'],
+              }, '▶'),
+              h('text', { class: 'md-details__title' }, block.summary),
+            ]),
+            openMap.value[bi]
+              ? h('view', { class: 'md-details__content' },
+                  h(MarkdownNodes, { blocks: block.children }))
+              : null,
+          ])
+
+        case 'callout':
+          return h('view', {
+            class: ['md-callout', `md-callout--${block.variant}`],
+            key: `b-${bi}`,
+          }, [
+            h('text', { class: 'md-callout__icon' }, CALLOUT_ICON[block.variant]),
+            h('view', { class: 'md-callout__body' },
+              h(MarkdownNodes, { blocks: block.children })),
+          ])
+
+        case 'card':
+          if (block.variant === 'big') {
+            return h('view', {
+              class: 'md-card',
+              onTap: () => openLink(block.url),
+              key: `b-${bi}`,
+            }, [
+              block.image
+                ? h('image', { class: 'md-card__cover', src: block.image, mode: 'aspectFill' })
+                : null,
+              h('view', { class: 'md-card__body' }, [
+                h('view', { class: 'md-card__head' }, [
+                  h('text', { class: 'md-card__title' }, block.title),
+                  h('text', { class: 'md-card__ext' }, '↗'),
+                ]),
+                block.description
+                  ? h('text', { class: 'md-card__desc' }, block.description)
+                  : null,
+                h('text', { class: 'md-card__url' }, block.url),
+              ]),
+            ])
+          }
+          return h('view', {
+            class: 'md-simple-card',
+            onTap: () => openLink(block.url),
+            key: `b-${bi}`,
+          }, [
+            h('text', { class: 'md-simple-card__title' }, block.title),
+            h('text', { class: 'md-simple-card__url' }, block.url),
+            h('text', { class: 'md-simple-card__ext' }, '↗'),
+          ])
+
+        case 'swiper':
+          return h('view', {
+            class: 'md-swiper',
+            key: `b-${bi}`,
+          }, h('swiper', {
+            class: 'md-swiper__box',
+            'indicator-dots': block.slides.length > 1,
+            'indicator-color': 'rgba(255,255,255,0.4)',
+            'indicator-active-color': '#fff',
+            circular: true,
+          }, block.slides.map((slide, si) =>
+            h('swiper-item', { key: `b-${bi}-s-${si}` }, [
+              isLivePhoto(slide.url)
+                ? h(LivePhoto, {
+                    class: 'md-swiper__img',
+                    src: slide.url,
+                    alt: slide.title,
+                    mode: 'aspectFill',
+                    fill: true,
+                  })
+                : h('image', {
+                    class: 'md-swiper__img',
+                    src: slide.url,
+                    mode: 'aspectFill',
+                    onTap: () => previewImages(block.slides.map(s => s.url), slide.url),
+                  }),
+              slide.title
+                ? h('view', { class: 'md-swiper__caption' },
+                    h('text', { class: 'md-swiper__caption-text' }, slide.title))
+                : null,
+            ]),
+          )))
+
+        case 'waterfall':
+          return h(WaterfallGrid, { images: block.images, key: `b-${bi}` })
+
+        case 'music':
+          return h(MusicPlayer, {
+            id: block.id,
+            server: block.server,
+            mediaType: block.mediaType,
+            key: `b-${bi}`,
+          })
+
+        case 'repo':
+          return h(RepoCard, {
+            platform: block.platform,
+            owner: block.owner,
+            repo: block.repo,
+            url: block.url,
+            key: `b-${bi}`,
+          })
+
+        case 'video':
+          return h('view', {
+            class: 'md-video',
+            key: `b-${bi}`,
+          }, h('video', {
+            class: 'md-video__player',
+            src: block.src,
+            controls: true,
+            'show-center-play-btn': true,
+            'enable-progress-gesture': true,
+            'object-fit': 'contain',
+            preload: 'metadata',
+          }))
+
+        default:
+          return null
+      }
+    }
+
+    return () => h('block', null,
+      (props.blocks as MarkdownBlock[]).map((b, i) => renderBlock(b, i)),
+    )
+  },
+})
+
+export default MarkdownNodes
 </script>
-
-<template>
-  <block
-    v-for="(block, bi) in blocks"
-    :key="bi"
-  >
-    <!-- 标题 -->
-    <view
-      v-if="block.type === 'heading'"
-      class="md-heading"
-      :class="`md-heading--h${block.level}`"
-    >
-      <inline-span
-        :spans="block.spans"
-        @open-link="openLink"
-      />
-    </view>
-
-    <!-- 段落 -->
-    <view
-      v-else-if="block.type === 'paragraph'"
-      class="md-paragraph"
-    >
-      <inline-span
-        :spans="block.spans"
-        @open-link="openLink"
-      />
-    </view>
-
-    <!-- 引用 -->
-    <view
-      v-else-if="block.type === 'quote'"
-      class="md-quote"
-    >
-      <inline-span
-        :spans="block.spans"
-        @open-link="openLink"
-      />
-    </view>
-
-    <!-- 列表 -->
-    <view
-      v-else-if="block.type === 'list'"
-      class="md-list"
-    >
-      <view
-        v-for="(item, ii) in block.items"
-        :key="ii"
-        class="md-list__item"
-      >
-        <text class="md-list__marker">
-          {{ block.ordered ? `${ii + 1}.` : '•' }}
-        </text>
-        <view class="md-list__body">
-          <inline-span
-            :spans="item"
-            @open-link="openLink"
-          />
-        </view>
-      </view>
-    </view>
-
-    <!-- 代码块 -->
-    <view
-      v-else-if="block.type === 'code'"
-      class="md-code"
-    >
-      <!-- 语言 / 文件名标题栏 -->
-      <view
-        v-if="block.lang || block.fileName"
-        class="md-code__bar"
-      >
-        <text
-          v-if="block.lang"
-          class="md-code__lang"
-        >
-          {{ block.lang }}
-        </text>
-        <text
-          v-if="block.fileName"
-          class="md-code__file"
-        >
-          {{ block.fileName }}
-        </text>
-      </view>
-
-      <scroll-view
-        class="md-code__scroll"
-        scroll-x
-      >
-        <view class="md-code__body">
-          <view
-            v-for="(codeLine, li) in block.lines"
-            :key="li"
-            class="md-code__line"
-          >
-            <!-- token 文本不可换行，否则会引入多余空白破坏代码显示 -->
-            <!-- eslint-disable vue/multiline-html-element-content-newline, vue/singleline-html-element-content-newline -->
-            <text
-              v-for="(token, ti) in codeLine"
-              :key="ti"
-              class="md-code__token"
-              :class="`tok--${token.type}`"
-            >{{ token.text }}</text>
-            <text v-if="codeLine.length === 0">{{ ' ' }}</text>
-            <!-- eslint-enable vue/multiline-html-element-content-newline, vue/singleline-html-element-content-newline -->
-          </view>
-        </view>
-      </scroll-view>
-    </view>
-
-    <!-- 图片：实况照片用 live-photo 组件（点击播放内嵌视频），普通图片用 image -->
-    <live-photo
-      v-else-if="block.type === 'image' && block.isLive"
-      class="md-image"
-      :src="block.src"
-      :alt="block.alt"
-      mode="widthFix"
-      radius="12rpx"
-    />
-    <image
-      v-else-if="block.type === 'image'"
-      class="md-image"
-      :src="block.src"
-      mode="widthFix"
-      @tap="previewImage(block.src)"
-    />
-
-    <!-- 分割线 -->
-    <view
-      v-else-if="block.type === 'divider'"
-      class="md-divider"
-    />
-
-    <!-- 表格 -->
-    <scroll-view
-      v-else-if="block.type === 'table'"
-      class="md-table-scroll"
-      scroll-x
-    >
-      <view class="md-table">
-        <!-- 表头 -->
-        <view class="md-table__row md-table__row--head">
-          <view
-            v-for="(cell, ci) in block.header"
-            :key="ci"
-            class="md-table__cell md-table__cell--head"
-            :class="`md-table__cell--${block.aligns[ci] || 'left'}`"
-          >
-            <inline-span
-              :spans="cell"
-              @open-link="openLink"
-            />
-          </view>
-        </view>
-
-        <!-- 数据行 -->
-        <view
-          v-for="(row, ri) in block.rows"
-          :key="ri"
-          class="md-table__row"
-        >
-          <view
-            v-for="(cell, ci) in row"
-            :key="ci"
-            class="md-table__cell"
-            :class="`md-table__cell--${block.aligns[ci] || 'left'}`"
-          >
-            <inline-span
-              :spans="cell"
-              @open-link="openLink"
-            />
-          </view>
-        </view>
-      </view>
-    </scroll-view>
-
-    <!-- 折叠面板 -->
-    <view
-      v-else-if="block.type === 'details'"
-      class="md-details"
-    >
-      <view
-        class="md-details__summary"
-        @tap="toggleDetails(bi)"
-      >
-        <text
-          class="md-details__arrow"
-          :class="{ 'md-details__arrow--open': openMap[bi] }"
-        >
-          ▶
-        </text>
-        <text class="md-details__title">
-          {{ block.summary }}
-        </text>
-      </view>
-      <view
-        v-if="openMap[bi]"
-        class="md-details__content"
-      >
-        <markdown-nodes :blocks="block.children" />
-      </view>
-    </view>
-
-    <!-- 提示框 -->
-    <view
-      v-else-if="block.type === 'callout'"
-      class="md-callout"
-      :class="`md-callout--${block.variant}`"
-    >
-      <text class="md-callout__icon">
-        {{ CALLOUT_ICON[block.variant] }}
-      </text>
-      <view class="md-callout__body">
-        <markdown-nodes :blocks="block.children" />
-      </view>
-    </view>
-
-    <!-- 大链接卡片 -->
-    <view
-      v-else-if="block.type === 'card' && block.variant === 'big'"
-      class="md-card"
-      @tap="openLink(block.url)"
-    >
-      <image
-        v-if="block.image"
-        class="md-card__cover"
-        :src="block.image"
-        mode="aspectFill"
-      />
-      <view class="md-card__body">
-        <view class="md-card__head">
-          <text class="md-card__title">
-            {{ block.title }}
-          </text>
-          <text class="md-card__ext">
-            ↗
-          </text>
-        </view>
-        <text
-          v-if="block.description"
-          class="md-card__desc"
-        >
-          {{ block.description }}
-        </text>
-        <text class="md-card__url">
-          {{ block.url }}
-        </text>
-      </view>
-    </view>
-
-    <!-- 小链接卡片 -->
-    <view
-      v-else-if="block.type === 'card' && block.variant === 'simple'"
-      class="md-simple-card"
-      @tap="openLink(block.url)"
-    >
-      <text class="md-simple-card__title">
-        {{ block.title }}
-      </text>
-      <text class="md-simple-card__url">
-        {{ block.url }}
-      </text>
-      <text class="md-simple-card__ext">
-        ↗
-      </text>
-    </view>
-
-    <!-- 轮播图 -->
-    <view
-      v-else-if="block.type === 'swiper'"
-      class="md-swiper"
-    >
-      <swiper
-        class="md-swiper__box"
-        :indicator-dots="block.slides.length > 1"
-        indicator-color="rgba(255,255,255,0.4)"
-        indicator-active-color="#fff"
-        :circular="true"
-      >
-        <swiper-item
-          v-for="(slide, si) in block.slides"
-          :key="si"
-        >
-          <live-photo
-            v-if="isLivePhoto(slide.url)"
-            class="md-swiper__img"
-            :src="slide.url"
-            :alt="slide.title"
-            mode="aspectFill"
-            :fill="true"
-          />
-          <image
-            v-else
-            class="md-swiper__img"
-            :src="slide.url"
-            mode="aspectFill"
-            @tap="previewImages(block.slides.map(s => s.url), slide.url)"
-          />
-          <view
-            v-if="slide.title"
-            class="md-swiper__caption"
-          >
-            <text class="md-swiper__caption-text">
-              {{ slide.title }}
-            </text>
-          </view>
-        </swiper-item>
-      </swiper>
-    </view>
-
-    <!-- 瀑布流 -->
-    <waterfall-grid
-      v-else-if="block.type === 'waterfall'"
-      :images="block.images"
-    />
-
-    <!-- 音乐播放器 -->
-    <music-player
-      v-else-if="block.type === 'music'"
-      :id="block.id"
-      :server="block.server"
-      :media-type="block.mediaType"
-    />
-
-    <!-- 仓库卡片 -->
-    <repo-card
-      v-else-if="block.type === 'repo'"
-      :platform="block.platform"
-      :owner="block.owner"
-      :repo="block.repo"
-      :url="block.url"
-    />
-
-    <!-- 视频：原生 <video> 播放，带控制条 -->
-    <view
-      v-else-if="block.type === 'video'"
-      class="md-video"
-    >
-      <video
-        class="md-video__player"
-        :src="block.src"
-        :controls="true"
-        :show-center-play-btn="true"
-        :enable-progress-gesture="true"
-        object-fit="contain"
-        preload="metadata"
-      />
-    </view>
-  </block>
-</template>
 
 <style lang="scss" scoped>
 /* ===== 行内样式 ===== */
@@ -737,7 +647,7 @@ function previewImages(urls: string[], current: string) {
 
 .md-callout--warning {
   background: rgb(234 179 8 / 8%);
-  border-color: rgb(234 179 8 / 30%);
+  border-color: rgb(234 179 8 / 12%);
 }
 
 .md-callout--warning .md-callout__icon {
@@ -853,6 +763,7 @@ function previewImages(urls: string[], current: string) {
   overflow: hidden;
   font-size: 28rpx;
   font-weight: 600;
+  line-height: 1.4;
   color: var(--ink);
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -863,7 +774,7 @@ function previewImages(urls: string[], current: string) {
   min-width: 0;
   margin: 0 16rpx;
   overflow: hidden;
-  font-size: 22rpx;
+  font-size: 26rpx;
   color: var(--muted);
   text-align: right;
   white-space: nowrap;
