@@ -1,17 +1,9 @@
 /** 站点配置类型定义 */
 
-/** 代码块字体配置（CSS 自定义属性 + loadFontFace 注册名 + 字体文件 URL 三处必须保持一致） */
+/** 代码块 Nerd 图标字体配置 */
 export interface CodeFontConfig {
-  /**
-   * 家族名。`uni.loadFontFace` 按它注册字体，CSS 引用时也用这个名（含 Nerd Font PUA 字形）。
-   * 改字体时家族名通常与文件名配套修改。
-   */
+  /** `uni.loadFontFace` 注册的家族名 */
   family: string
-  /**
-   * 完整字体栈（含系统 fallback）。CSS `font-family` 直接用此串——所有 `var(--code-font-family)`
-   * 与 `.md-code__lang` / `.md-code__file` 例外以外的渲染都走这一栈。
-   */
-  stack: string
   /** 字体文件下载地址（woff2 / ttf / etc.）。`ensureCodeFont` 按需 loadFontFace。 */
   url: string
 }
