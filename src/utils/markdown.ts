@@ -11,7 +11,7 @@ import { highlightCode } from '@/utils/highlight'
 
 // 极简 Markdown 解析器：把原文按行解析成块级节点，供小程序原生组件渲染。
 // 有意只支持最基础语法（标题 / 段落 / 列表 / 引用 / 代码块 / 图片 / 分割线，
-// 行内支持 粗体 / 斜体 / 行内码 / 链接），复杂语法（表格、嵌套列表、HTML 等）
+// 行内支持 粗体 / 斜体 / 删除线 / 行内码 / 链接），复杂语法（表格、嵌套列表、HTML 等）
 // 暂不处理，后续按需扩展。
 
 const HEADING_RE = /^(#{1,6})\s+(.*)$/
@@ -108,7 +108,7 @@ function matchImage(line: string, refs: Map<string, string>): ImageBlock | null 
   return null
 }
 
-/** 解析行内片段：粗体、斜体、行内码、链接，其余为纯文本 */
+/** 解析行内片段：粗体、斜体、删除线、行内码、链接，其余为纯文本 */
 export function parseInline(input: string): InlineSpan[] {
   const spans: InlineSpan[] = []
   let rest = input
@@ -118,6 +118,7 @@ export function parseInline(input: string): InlineSpan[] {
     { type: 'code', re: /`([^`]+)`/ },
     { type: 'strong', re: /\*\*([^*]+)\*\*/ },
     { type: 'em', re: /\*([^*]+)\*/ },
+    { type: 'strike', re: /~~([^~\n]+)~~/ },
     { type: 'link', re: /\[([^\]]+)\]\(([^)]+)\)/ },
   ]
 

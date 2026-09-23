@@ -21,6 +21,7 @@
     "@dcloudio/uni-mp-alipay": "3.0.0-alpha-1000920260626810",
     "@dcloudio/uni-mp-weixin": "3.0.0-alpha-1000920260626810",
     "@dcloudio/uni-stat": "3.0.0-alpha-1000920260626810",
+    "@types/node": "^26.6.2",
     "vue": "^3.5.31",
     "wot-design-uni": "^1.14.0"
   },

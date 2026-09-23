@@ -1,9 +1,9 @@
 // 极简 Markdown 解析结果类型：块级节点 + 行内片段
 // 仅覆盖最基础语法，供小程序用原生 view/text 渲染
 
-/** 行内片段：普通文本 / 粗体 / 斜体 / 行内代码 / 链接 */
+/** 行内片段：普通文本 / 粗体 / 斜体 / 删除线 / 行内代码 / 链接 */
 export interface InlineSpan {
-  type: 'text' | 'strong' | 'em' | 'code' | 'link'
+  type: 'text' | 'strong' | 'em' | 'strike' | 'code' | 'link'
   text: string
   /** 仅 link 有值 */
   href?: string

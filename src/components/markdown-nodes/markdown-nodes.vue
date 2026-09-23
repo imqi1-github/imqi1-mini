@@ -471,6 +471,10 @@ function previewImages(urls: string[], current: string) {
   font-style: italic;
 }
 
+.md-inline--strike {
+  text-decoration: line-through;
+}
+
 .md-inline--code {
   padding: 2rpx 10rpx;
   margin: 0 4rpx;

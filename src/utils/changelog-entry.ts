@@ -3,7 +3,7 @@ import { parseInline } from '@/utils/markdown'
 
 // 更新日志单条变更内容的块级解析：把多行文本解析成「文本 / 列表」块，
 // 列表支持有序（1. 2.）、无序（- * +）与按缩进的嵌套。
-// 复用 utils/markdown 的 parseInline 处理行内语法（粗体 / 斜体 / 行内码 / 链接）。
+// 复用 utils/markdown 的 parseInline 处理行内语法（粗体 / 斜体 / 删除线 / 行内码 / 链接）。
 
 const UNORDERED_RE = /^[-*+]\s+(.*)$/
 const ORDERED_RE = /^\d+\.\s+(.*)$/
