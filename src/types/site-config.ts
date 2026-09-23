@@ -1,6 +1,22 @@
+/** 站点配置类型定义 */
+
+/** 代码块字体配置（CSS 自定义属性 + loadFontFace 注册名 + 字体文件 URL 三处必须保持一致） */
+export interface CodeFontConfig {
+  /**
+   * 家族名。`uni.loadFontFace` 按它注册字体，CSS 引用时也用这个名（含 Nerd Font PUA 字形）。
+   * 改字体时家族名通常与文件名配套修改。
+   */
+  family: string
+  /**
+   * 完整字体栈（含系统 fallback）。CSS `font-family` 直接用此串——所有 `var(--code-font-family)`
+   * 与 `.md-code__lang` / `.md-code__file` 例外以外的渲染都走这一栈。
+   */
+  stack: string
+  /** 字体文件下载地址（woff2 / ttf / etc.）。`ensureCodeFont` 按需 loadFontFace。 */
+  url: string
+}
+
 /**
- * 小程序站点配置类型定义。
- *
  * 修改此处字段会同步触发所有引用处的 TypeScript 类型检查，
  * 字段上的 JSDoc 会在 IDE 悬浮提示中展示。
  */
@@ -19,6 +35,8 @@ export interface SiteConfig {
   home: HomeConfig
   /** 分类页展示配置 */
   category: CategoryConfig
+  /** 代码块字体配置（见 {@link CodeFontConfig}） */
+  codeFont: CodeFontConfig
 }
 
 /** 分类页展示配置 */

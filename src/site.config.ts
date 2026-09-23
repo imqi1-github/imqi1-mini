@@ -25,4 +25,12 @@ export const siteConfig = defineSiteConfig({
     // 图片分类 slug：命中则该分类走双列封面瀑布流，其余走标题列表
     photoCategorySlugs: ['shot'],
   },
+  codeFont: {
+    // 家族名：uni.loadFontFace 与 CSS 都按它引用（含 Nerd Font PUA 字形）。
+    family: 'JetBrainsMono',
+    // 字体栈：fallback 顺序对终端图标回退到通用等宽字体。
+    stack: `'JetBrainsMono', 'SFMono-Regular', Consolas, Menlo, monospace`,
+    // 字体文件 URL：CDN 需加入微信「downloadFile 合法域名」否则真机加载失败。
+    url: 'https://cdn.imqi1.com/fonts/JetBrainsMono-Rest.woff2',
+  },
 })

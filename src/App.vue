@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { onHide, onLaunch, onShow } from '@dcloudio/uni-app'
 
+import { siteConfig } from '@/site.config'
+
+// CSS 变量注入点：把 siteConfig.codeFont.stack 绑到 page 元素的 --code-font-family，
+// 全局 .md-inline--code / .md-code__token 都引用这个变量。fork 用户改字体只改 site.config.ts。
+const codeFontStack = siteConfig.codeFont.stack
+
 onLaunch(() => {
   // 小程序启动
 })
@@ -32,6 +38,12 @@ page {
   --card: #ffffff;
   --code-bg: #0f172a; /* 代码块深底 */
   --code-ink: #e2e8f0; /* 代码块浅字 */
+  /* 代码字体栈：值来自 site.config.ts 的 codeFont.stack；loadFontFace 按同字段
+     codeFont.family 注册。改字体只需改 site.config.ts 一处（family / stack / url 三者配套）。
+     例外：markdown-nodes.vue 的 .md-code__lang / .md-code__file 故意直接写
+     'SFMono-Regular' 紧凑系统等宽字体栈——这两处是代码块头部的「语言标签」
+     与「文件名」装饰，与代码正文混用 Nerd Font 字距偏宽、视觉臃肿。 */
+  --code-font-family: v-bind(codeFontStack);
 
   background-color: var(--bg);
   color: var(--ink);

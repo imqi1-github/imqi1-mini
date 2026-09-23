@@ -478,7 +478,7 @@ function previewImages(urls: string[], current: string) {
 .md-inline--code {
   padding: 2rpx 10rpx;
   margin: 0 4rpx;
-  font-family: 'JetBrainsMono', 'SFMono-Regular', Consolas, Menlo, monospace;
+  font-family: var(--code-font-family);
   font-size: 26rpx;
   color: var(--brand-2);
   background: var(--line);
@@ -604,9 +604,7 @@ function previewImages(urls: string[], current: string) {
 }
 
 .md-code__token {
-  /* JetBrainsMono 为 Nerd Font 化字体（含终端图标 PUA 字形），由 ensureCodeFont 按需加载；
-     未加载完成时回退系统等宽字体，图标暂显豆腐块，加载后自动刷新。 */
-  font-family: 'JetBrainsMono', 'SFMono-Regular', Consolas, Menlo, monospace;
+  font-family: var(--code-font-family);
   font-size: 26rpx;
   line-height: 1.7;
   color: var(--code-ink);

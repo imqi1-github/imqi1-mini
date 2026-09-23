@@ -108,7 +108,7 @@ function openLink(href: string) {
 .md-inline--code {
   padding: 2rpx 10rpx;
   margin: 0 4rpx;
-  font-family: 'SFMono-Regular', Consolas, Menlo, monospace;
+  font-family: var(--code-font-family);
   font-size: 24rpx;
   color: var(--brand-2);
   background: var(--line);
