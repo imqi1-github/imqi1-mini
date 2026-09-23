@@ -1,77 +1,125 @@
-<script lang="ts">
-import { defineComponent, h, type Component } from 'vue'
+<script setup lang="ts">
 import { siteConfig } from '@/site.config'
-import { buildInlineSpans } from '@/utils/inline-span'
 import type { EntryBlock } from '@/types/changelog'
 
 // 递归渲染更新日志变更内容的块级节点（文本 / 列表，列表可嵌套）。
-// 自引用：h(ChangelogEntry, { blocks }) 渲染子列表 children。
-// 显式标注返回类型为 Component，避免 TS 自引用 implicit any 报错。
-const ChangelogEntry: Component = defineComponent({
-  name: 'ChangelogEntry',
-  props: {
-    blocks: {
-      type: Array,
-      required: true,
-    },
-  },
-  setup(props) {
-    // 以 / 开头的根相对链接补全为完整站点地址后复制（小程序无法直接打开外链）
-    function resolveHref(href: string): string {
-      if (href.startsWith('/') && !href.startsWith('//') && siteConfig.siteUrl) {
-        return siteConfig.siteUrl + href
-      }
-      return href
-    }
+// 子列表通过自引用本组件渲染 item.children，靠 name 解析递归。
+//
+// 行内片段（spans）已由 utils/markdown.ts 拍平为扁平叶子，一层 v-for 渲染。
+// 刻意不用嵌套结构或自定义组件——小程序原生 <text> 不能包含 <block> 或
+// 自定义组件，模板 + 扁平 v-for 是 mp-weixin 实测唯一稳妥路径。
+defineOptions({ name: 'ChangelogEntry' })
 
-    function openLink(href: string) {
-      uni.setClipboardData({
-        data: resolveHref(href),
-        success: () => uni.showToast({ title: '链接已复制', icon: 'none' }),
-      })
-    }
+defineProps<{
+  /** 待渲染的块级节点数组 */
+  blocks: EntryBlock[]
+}>()
 
-    const inlineSpans = (spans: Parameters<typeof buildInlineSpans>[0]) =>
-      buildInlineSpans(spans, openLink)
+// 以 / 开头的根相对链接补全为完整站点地址后复制（小程序无法直接打开外链）
+function resolveHref(href: string) {
+  if (href.startsWith('/') && !href.startsWith('//') && siteConfig.siteUrl) {
+    return siteConfig.siteUrl + href
+  }
+  return href
+}
 
-    function renderBlock(block: EntryBlock, bi: number) {
-      if (block.type === 'text') {
-        return h('view', { class: 'entry-text', key: `b-${bi}` }, inlineSpans(block.spans))
-      }
-      // list
-      return h('view', { class: 'entry-list', key: `b-${bi}` },
-        block.items.map((item, ii) =>
-          h('view', { class: 'entry-list__item', key: `b-${bi}-i-${ii}` }, [
-            h('text', { class: 'entry-list__marker' }, block.ordered ? `${ii + 1}.` : '•'),
-            h('view', { class: 'entry-list__body' }, [
-              h('view', { class: 'entry-list__line' }, inlineSpans(item.spans)),
-              item.children.length
-                ? h(ChangelogEntry, { blocks: item.children })
-                : null,
-            ]),
-          ]),
-        ),
-      )
-    }
-
-    return () => h('block', null,
-      (props.blocks as EntryBlock[]).map((b, i) => renderBlock(b, i)),
-    )
-  },
-})
-
-export default ChangelogEntry
+function openLink(href: string) {
+  uni.setClipboardData({
+    data: resolveHref(href),
+    success: () => uni.showToast({ title: '链接已复制', icon: 'none' }),
+  })
+}
 </script>
 
-<!-- 小程序要求每个 usingComponents 组件目录下有 .wxml，否则加载报错。
-     本组件用 render function 渲染（小程序 <text> 不能嵌自定义组件），运行时忽略
-     template；放一个空 view 仅为让 uni-app 输出 .wxml / .json / .wxss 文件。
-     template 中不得引用任何组件，否则 uni-app 会把它们记入 usingComponents。 -->
 <template>
-  <view />
+  <block
+    v-for="(block, bi) in blocks"
+    :key="bi"
+  >
+    <!-- 文本 -->
+    <view
+      v-if="block.type === 'text'"
+      class="entry-text"
+    >
+      <text
+        v-for="(span, si) in block.spans"
+        :key="si"
+        class="md-inline"
+        :class="span.cls"
+        @tap="span.href ? openLink(span.href) : undefined"
+      >{{ span.text }}</text>
+    </view>
+
+    <!-- 列表 -->
+    <view
+      v-else-if="block.type === 'list'"
+      class="entry-list"
+    >
+      <view
+        v-for="(item, ii) in block.items"
+        :key="ii"
+        class="entry-list__item"
+      >
+        <text class="entry-list__marker">
+          {{ block.ordered ? `${ii + 1}.` : '•' }}
+        </text>
+        <view class="entry-list__body">
+          <view class="entry-list__line">
+            <text
+              v-for="(span, si) in item.spans"
+              :key="si"
+              class="md-inline"
+              :class="span.cls"
+              @tap="span.href ? openLink(span.href) : undefined"
+            >{{ span.text }}</text>
+          </view>
+          <!-- 嵌套子块（子列表 / 文本），递归渲染 -->
+          <changelog-entry
+            v-if="item.children.length"
+            :blocks="item.children"
+          />
+        </view>
+      </view>
+    </view>
+  </block>
 </template>
 
 <style lang="scss" scoped>
+/* ===== 行内 Markdown 片段（与 markdown-nodes 的行内类保持同名同义） ===== */
+.md-inline {
+  font-size: 27rpx;
+  line-height: 1.6;
+  color: var(--ink);
+  word-break: break-word;
+}
+
+.md-inline--strong {
+  font-weight: 700;
+}
+
+.md-inline--em {
+  font-style: italic;
+}
+
+.md-inline--strike {
+  text-decoration: line-through;
+}
+
+.md-inline--code {
+  padding: 2rpx 10rpx;
+  margin: 0 4rpx;
+  font-family: var(--code-font-family);
+  font-size: 24rpx;
+  color: var(--brand-2);
+  background: var(--line);
+  border-radius: 8rpx;
+}
+
+.md-inline--link {
+  color: var(--brand);
+  text-decoration: underline;
+}
+
 /* ===== 文本块 ===== */
 .entry-text:not(:last-child) {
   margin-bottom: 10rpx;

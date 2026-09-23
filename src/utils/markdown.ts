@@ -114,80 +114,90 @@ const AUTOLINK_RE = /<((?:https?:\/\/|mailto:)[^>\s]+)>/
 // 邮件地址检测：尖括号 + 普通邮箱格式。捕获组 [1] 是地址原文（不含 mailto: 前缀）。
 const EMAIL_RE = /<([\w.+-]+@[\w-]+(?:\.[\w-]+)+)>/
 
-/** 解析行内片段：粗体、斜体、删除线、行内码、链接、自动链接，其余为纯文本。
- *
- * 容器型片段（strong / em / strike / link）的内部递归调用本函数解析，使删除线内嵌链接、
- * 链接内嵌粗体这类语法与主站 markdown-it 对齐。
+/** 行内语法树中间节点：parseInline 内部递归用，最终拍平为扁平 InlineSpan */
+type SpanNode =
+  | { type: 'text', text: string }
+  | { type: 'code', text: string }
+  | { type: 'strong', children: SpanNode[] }
+  | { type: 'em', children: SpanNode[] }
+  | { type: 'strike', children: SpanNode[] }
+  | { type: 'link', children: SpanNode[], href: string }
+
+/** 容器型节点 → 行内样式类（不含基础类 md-inline，渲染层统一加） */
+export const SPAN_CLS: Record<Exclude<SpanNode['type'], 'text'>, string> = {
+  code: 'md-inline--code',
+  strong: 'md-inline--strong',
+  em: 'md-inline--em',
+  strike: 'md-inline--strike',
+  link: 'md-inline--link',
+}
+
+/**
+ * 把语法树拍平为扁平 InlineSpan：祖先容器的 class 累积到叶子。
+ * 「~~[链接](url)~~」 → [ {strike 纯文本}, {strike+link 链接文本, href} ]。
+ * 链接的 href 从当前节点向下传到所有子孙叶子（链接内修饰整段可点）。
+ */
+function flattenNode(
+  node: SpanNode,
+  inheritedCls: string[],
+  href: string | null,
+  out: InlineSpan[],
+): void {
+  if (node.type === 'text') {
+    const cls = inheritedCls.join(' ')
+    out.push(href ? { text: node.text, cls, href } : { text: node.text, cls: cls || undefined })
+    return
+  }
+  if (node.type === 'code') {
+    out.push({ text: node.text, cls: [...inheritedCls, SPAN_CLS.code].join(' ') })
+    return
+  }
+  // 容器型：class 下传；link 额外把 href 下传
+  const cls = [...inheritedCls, SPAN_CLS[node.type]]
+  for (const child of node.children) {
+    flattenNode(child, cls, node.type === 'link' ? node.href : href, out)
+  }
+}
+
+/** 解析行内语法树（内部递归）：粗体、斜体、删除线、行内码、链接、自动链接。
  *
  * 匹配策略：每轮在当前 rest 中扫所有 pattern，找最早匹配；前导部分作为 text 切走。
- * - 这样保留「hello **world** foo」中 world 的 bold 解析（前导 text + bold + text + bold 顺序）
- * - 自动链接允许出现在 rest 中间位置（前面 text 由主循环切走）
+ * 容器型（strong / em / strike / link）内部递归调用本函数。
  */
-export function parseInline(input: string): InlineSpan[] {
-  const spans: InlineSpan[] = []
+function parseInlineNodes(input: string): SpanNode[] {
+  const nodes: SpanNode[] = []
   let rest = input
 
   // 容器型片段：捕获组 [1] 是内部文本（链接 [1] 文本 + [2] href）；解析时再对其递归。
   const containerPatterns: Array<{
     type: 'strong' | 'em' | 'strike' | 'link'
     re: RegExp
-    build: (m: RegExpExecArray) => InlineSpan
+    build: (m: RegExpExecArray) => SpanNode
   }> = [
-    {
-      type: 'strong',
-      re: /\*\*([^*]+)\*\*/,
-      build: m => ({ type: 'strong', children: parseInline(m[1]) }),
-    },
-    {
-      type: 'em',
-      re: /\*([^*]+)\*/,
-      build: m => ({ type: 'em', children: parseInline(m[1]) }),
-    },
-    {
-      type: 'strike',
-      re: /~~([^~\n]+)~~/,
-      build: m => ({ type: 'strike', children: parseInline(m[1]) }),
-    },
-    {
-      type: 'link',
-      re: /\[([^\]]+)\]\(([^)]+)\)/,
-      build: m => ({ type: 'link', children: parseInline(m[1]), href: m[2] }),
-    },
+    { type: 'strong', re: /\*\*([^*]+)\*\*/, build: m => ({ type: 'strong', children: parseInlineNodes(m[1]) }) },
+    { type: 'em', re: /\*([^*]+)\*/, build: m => ({ type: 'em', children: parseInlineNodes(m[1]) }) },
+    { type: 'strike', re: /~~([^~\n]+)~~/, build: m => ({ type: 'strike', children: parseInlineNodes(m[1]) }) },
+    { type: 'link', re: /\[([^\]]+)\]\(([^)]+)\)/, build: m => ({ type: 'link', children: parseInlineNodes(m[1]), href: m[2] }) },
   ]
 
   // 叶子型片段：内部不再解析；扫整个 rest 找最早位置。
   const leafPatterns: Array<{
-    type: 'code' | 'link'
     re: RegExp
-    build: (m: RegExpExecArray) => InlineSpan
+    build: (m: RegExpExecArray) => SpanNode
   }> = [
+    { re: /`([^`]+)`/, build: m => ({ type: 'code', text: m[1] }) },
     {
-      type: 'code',
-      re: /`([^`]+)`/,
-      build: m => ({ type: 'code', text: m[1] }),
-    },
-    {
-      type: 'link',
       re: AUTOLINK_RE,
-      build: m => ({
-        type: 'link',
-        children: [{ type: 'text', text: m[1] }],
-        href: m[1],
-      }),
+      build: m => ({ type: 'link', children: [{ type: 'text', text: m[1] }], href: m[1] }),
     },
     {
-      type: 'link',
       re: EMAIL_RE,
-      build: m => ({
-        type: 'link',
-        children: [{ type: 'text', text: m[1] }],
-        href: `mailto:${m[1]}`,
-      }),
+      build: m => ({ type: 'link', children: [{ type: 'text', text: m[1] }], href: `mailto:${m[1]}` }),
     },
   ]
 
   while (rest.length > 0) {
-    let best: { index: number, len: number, span: InlineSpan } | null = null
+    let best: { index: number, len: number, span: SpanNode } | null = null
 
     // 容器型（任意位置找最早）
     for (const { re, build } of containerPatterns) {
@@ -206,19 +216,31 @@ export function parseInline(input: string): InlineSpan[] {
     }
 
     if (!best) {
-      spans.push({ type: 'text', text: rest })
+      nodes.push({ type: 'text', text: rest })
       break
     }
 
     // 前导 text
     if (best.index > 0) {
-      spans.push({ type: 'text', text: rest.slice(0, best.index) })
+      nodes.push({ type: 'text', text: rest.slice(0, best.index) })
     }
-    spans.push(best.span)
+    nodes.push(best.span)
     rest = rest.slice(best.index + best.len)
   }
 
-  return spans
+  return nodes
+}
+
+/**
+ * 行内片段解析入口：递归识别语法树 → 拍平为扁平 InlineSpan[]。
+ * 返回的数组可直接供模板一层 v-for 渲染（cls / href 已在叶子就位）。
+ */
+export function parseInline(input: string): InlineSpan[] {
+  const out: InlineSpan[] = []
+  for (const node of parseInlineNodes(input)) {
+    flattenNode(node, [], null, out)
+  }
+  return out
 }
 
 /** 拆分表格一行为若干单元格，去掉首尾的 | 并处理转义的 \| */

@@ -1,19 +1,27 @@
 // 极简 Markdown 解析结果类型：块级节点 + 行内片段
 // 仅覆盖最基础语法，供小程序用原生 view/text 渲染
 //
-// 行内片段语义：
-// - text / code 没有嵌套概念，存 text
-// - strong / em / strike / link 是容器，内部继续解析为 InlineSpan[]
-//   （让删除线内嵌链接、链接内嵌粗体这类语法与主站 markdown-it 对齐）
+// 行内片段在解析阶段即**拍平**：容器型语法（strong/em/strike/link）的样式
+// 累积到叶子节点的 cls 字段，渲染层只需一层 v-for。这是刻意为之——
+// 小程序原生 <text> 不能包含 <block> 或自定义组件，嵌套结构在 mp-weixin
+// 的模板与 render function 两条路径上都无法安全渲染（实测均崩）。
 
-/** 行内片段：text/code 用 text 字段；strong/em/strike/link 用 children 字段递归 */
-export type InlineSpan =
-  | { type: 'text'; text: string }
-  | { type: 'code'; text: string }
-  | { type: 'strong'; children: InlineSpan[] }
-  | { type: 'em'; children: InlineSpan[] }
-  | { type: 'strike'; children: InlineSpan[] }
-  | { type: 'link'; children: InlineSpan[]; href: string }
+/**
+ * 行内片段（已扁平化）。
+ * 解析时递归识别语法树，最后把祖先容器的 class 累积到每个叶子，
+ * 使「删除线内嵌链接」渲染为：strike 纯文本节点 + strike+link 链接节点。
+ */
+export interface InlineSpan {
+  /** 片段文本 */
+  text: string
+  /**
+   * 行内样式类（空格分隔，不含基础类 md-inline——渲染层统一加）。
+   * 普通文本为空。code 用 md-inline--code，容器型见 utils/markdown.ts 的 TYPE_CLS。
+   */
+  cls?: string
+  /** 仅 link 片段有值；存在时点击该片段触发链接处理（小程序内复制） */
+  href?: string
+}
 
 /** 标题块 */
 export interface HeadingBlock {
