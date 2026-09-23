@@ -201,8 +201,11 @@ const MarkdownNodes: Component = defineComponent({
               class: 'md-details__summary',
               onTap: () => toggleDetails(bi),
             }, [
+              // class 必须始终是字符串：uni-app mp-weixin 对 class 数组元素直接调用
+              // String.replace 归一化，混入 boolean/undefined（如 `x && 'cls'` 的结果）
+              // 会在运行时抛 TypeError: e1.replace is not a function
               h('text', {
-                class: ['md-details__arrow', openMap.value[bi] && 'md-details__arrow--open'],
+                class: openMap.value[bi] ? 'md-details__arrow md-details__arrow--open' : 'md-details__arrow',
               }, '▶'),
               h('text', { class: 'md-details__title' }, block.summary),
             ]),
