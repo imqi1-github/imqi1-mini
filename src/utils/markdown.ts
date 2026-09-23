@@ -149,7 +149,8 @@ function flattenNode(
     return
   }
   if (node.type === 'code') {
-    out.push({ text: node.text, cls: [...inheritedCls, SPAN_CLS.code].join(' ') })
+    const cls = [...inheritedCls, SPAN_CLS.code].join(' ')
+    out.push(href ? { text: node.text, cls, href } : { text: node.text, cls })
     return
   }
   // 容器型：class 下传；link 额外把 href 下传
