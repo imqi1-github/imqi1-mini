@@ -1,0 +1,18 @@
+{
+  // mini 子模块独立测试 tsconfig：与 src/ 同源 paths 但只 include test/。
+  // src/tsconfig.json 配 noUnusedLocals/noUnusedParameters 对测试过严,这里关掉。
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noEmit": true,
+    "types": ["bun", "@dcloudio/types"]
+  },
+  "include": [
+    "./**/*.ts",
+    "../src/**/*.ts",
+    "../src/**/*.d.ts",
+    "../src/**/*.vue",
+    "../env.d.ts"
+  ]
+}
