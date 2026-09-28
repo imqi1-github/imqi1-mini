@@ -6,15 +6,15 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { post, request, requestFull } from "@/utils/request";
 
 type CapturedCall = {
-  url: string,
-  method?: string,
-  header?: Record<string, string>,
-  data?: unknown,
-  responseType?: string,
+  url: string;
+  method?: string;
+  header?: Record<string, string>;
+  data?: unknown;
+  responseType?: string;
 };
 
 let calls: CapturedCall[] = [];
-let response: { statusCode: number, data: unknown } | null = null;
+let response: { statusCode: number; data: unknown } | null = null;
 let failErr: { errMsg: string } | null = null;
 let origRequest: (opts: unknown) => void;
 
@@ -26,13 +26,13 @@ beforeEach(() => {
   origRequest = u.uni.request;
   u.uni.request = (opts: unknown) => {
     const o = opts as {
-      url: string,
-      method?: string,
-      header?: Record<string, string>,
-      data?: unknown,
-      responseType?: string,
-      success?: (r: { statusCode: number, data: unknown }) => void,
-      fail?: (e: { errMsg: string }) => void,
+      url: string;
+      method?: string;
+      header?: Record<string, string>;
+      data?: unknown;
+      responseType?: string;
+      success?: (r: { statusCode: number; data: unknown }) => void;
+      fail?: (e: { errMsg: string }) => void;
     };
     calls.push({
       url: o.url,
@@ -43,15 +43,16 @@ beforeEach(() => {
     });
     if (failErr) {
       o.fail?.(failErr);
-    }
-    else if (response) {
+    } else if (response) {
       o.success?.(response);
     }
   };
 });
 
 afterEach(() => {
-  (globalThis as unknown as { uni: { request: (o: unknown) => void } }).uni.request = origRequest;
+  (
+    globalThis as unknown as { uni: { request: (o: unknown) => void } }
+  ).uni.request = origRequest;
 });
 
 describe("request(GET)", () => {
@@ -87,37 +88,47 @@ describe("request(GET)", () => {
   });
 
   test("响应 success=false 但 2xx → reject 带 message", async () => {
-    response = { statusCode: 200, data: { success: false, message: "业务错误" } };
-    await expect(request("/x")).rejects.toThrow("业务错误");
+    response = {
+      statusCode: 200,
+      data: { success: false, message: "业务错误" },
+    };
+    expect(request("/x")).rejects.toThrow("业务错误");
   });
 
   test("响应 statusCode 4xx + message → reject 带 message", async () => {
     response = { statusCode: 429, data: { message: "评论太频繁" } };
-    await expect(request("/x")).rejects.toThrow("评论太频繁");
+    expect(request("/x")).rejects.toThrow("评论太频繁");
   });
 
   test("响应 statusCode 4xx 无 message → reject 带状态码", async () => {
     response = { statusCode: 500, data: null };
-    await expect(request("/x")).rejects.toThrow("请求失败：500");
+    expect(request("/x")).rejects.toThrow("请求失败：500");
   });
 
   test("fail callback → reject with error", async () => {
     failErr = { errMsg: "network fail" };
-    await expect(request("/x")).rejects.toBeDefined();
+    expect(request("/x")).rejects.toBeDefined();
   });
 });
 
 describe("requestFull(GET,返回完整 envelope)", () => {
   test("返回 { success, data, message } 完整 envelope", async () => {
-    response = { statusCode: 200, data: { success: true, data: { x: 1 }, extra: "meta" } };
-    const env = await requestFull<{ success: boolean, data: { x: number }, extra: string }>("/x");
+    response = {
+      statusCode: 200,
+      data: { success: true, data: { x: 1 }, extra: "meta" },
+    };
+    const env = await requestFull<{
+      success: boolean;
+      data: { x: number };
+      extra: string;
+    }>("/x");
     expect(env.extra).toBe("meta");
     expect(env.data).toEqual({ x: 1 });
   });
 
   test("envelope success=false → reject with message", async () => {
     response = { statusCode: 200, data: { success: false, message: "失败" } };
-    await expect(requestFull("/x")).rejects.toThrow("失败");
+    expect(requestFull("/x")).rejects.toThrow("失败");
   });
 });
 
@@ -152,7 +163,7 @@ describe("HMAC 签名不变式", () => {
     response = { statusCode: 200, data: { success: true, data: null } };
     await request("/x");
     const sign1 = calls[0]!.header!["X-Mini-Sign"];
-    await new Promise(r => setTimeout(r, 5));
+    await new Promise((r) => setTimeout(r, 5));
     response = { statusCode: 200, data: { success: true, data: null } };
     await request("/x");
     const sign2 = calls[1]!.header!["X-Mini-Sign"];
@@ -171,8 +182,7 @@ describe("HMAC 签名不变式", () => {
       await request("/x");
       // 当前 cached 模块仍用 test-secret,签名头应存在
       expect(calls.at(-1)!.header!["X-Mini-Sign"]).toBeTruthy();
-    }
-    finally {
+    } finally {
       process.env.VITE_MINI_API_SECRET = origSecret;
     }
   });

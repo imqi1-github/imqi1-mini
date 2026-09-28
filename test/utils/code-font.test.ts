@@ -6,11 +6,11 @@ import { ensureCodeFont } from "@/utils/code-font";
 // 「同步 throw」分支需要 fresh 模块,留作 source 注释。
 
 type FontFaceOpts = {
-  family: string,
-  source: string,
-  global?: boolean,
-  success?: () => void,
-  fail?: (err: unknown) => void,
+  family: string;
+  source: string;
+  global?: boolean;
+  success?: () => void;
+  fail?: (err: unknown) => void;
 };
 
 let calls: Array<FontFaceOpts> = [];
@@ -18,7 +18,9 @@ let origLoadFontFace: (opts: FontFaceOpts) => void;
 
 beforeEach(() => {
   calls = [];
-  const u = globalThis as unknown as { uni: { loadFontFace: (o: FontFaceOpts) => void } };
+  const u = globalThis as unknown as {
+    uni: { loadFontFace: (o: FontFaceOpts) => void };
+  };
   origLoadFontFace = u.uni.loadFontFace;
   u.uni.loadFontFace = (opts: FontFaceOpts) => {
     calls.push(opts);
@@ -32,7 +34,11 @@ beforeEach(() => {
 // afterEach 还原
 import { afterEach } from "bun:test";
 afterEach(() => {
-  (globalThis as unknown as { uni: { loadFontFace: (o: FontFaceOpts) => void } }).uni.loadFontFace = origLoadFontFace;
+  (
+    globalThis as unknown as {
+      uni: { loadFontFace: (o: FontFaceOpts) => void };
+    }
+  ).uni.loadFontFace = origLoadFontFace;
 });
 
 describe("ensureCodeFont(首次调用)", () => {
@@ -68,14 +74,16 @@ describe("ensureCodeFont(callback 路径)", () => {
     const before = calls.length;
     if (calls[0]?.success) calls[0].success();
     // await 微任务跑完
-    await new Promise(r => setTimeout(r, 10));
+    await new Promise((r) => setTimeout(r, 10));
     // 验证 resolve 后再次 ensureCodeFont 不会触发新 loadFontFace
     await ensureCodeFont();
     expect(calls.length).toBe(before);
   });
 
   test("loadFontFace fail → loadPromise 仍 resolve(降级系统字体)", async () => {
-    const u = globalThis as unknown as { uni: { loadFontFace: (o: FontFaceOpts) => void } };
+    const u = globalThis as unknown as {
+      uni: { loadFontFace: (o: FontFaceOpts) => void };
+    };
     const orig = u.uni.loadFontFace;
     u.uni.loadFontFace = (opts: FontFaceOpts) => {
       calls.push(opts);
@@ -84,7 +92,7 @@ describe("ensureCodeFont(callback 路径)", () => {
     };
     ensureCodeFont();
     // 不抛,promise resolve
-    await expect(ensureCodeFont()).resolves.toBeUndefined();
+    expect(ensureCodeFont()).resolves.toBeUndefined();
     u.uni.loadFontFace = orig;
   });
 });
